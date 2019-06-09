@@ -1,0 +1,74 @@
+﻿TPA6120A2 (-)
+	Power Supply Range: ±5V to ±15V
+	THD of 112.5dB 
+	Current output: typ 700ma per channel (и низкое падение напряжения под нагрузкой)
+	Input impedance: typ 300k
+	Специализированная микросхема с классными характеристиками
+	Минусы: на посадочное место подходит только эта микросхема
+OPA2604 (-)
+	LOW DISTORTION: 0.0003% at 1kHz
+	WIDE SUPPLY RANGE: VS = ±4.5 to ±24V
+	Current output: +-35ma (short circuit = +-40ma)
+	Input impedance: 10^12 ohms
+	Freq: 20MHz
+NE5532 (-)
+	Current output: +-38ma (short circuit)
+	Input impedance 300k (min = 30k)
+	Freq: 10MHz
+	Peak-to-Peak Output: typ 26V (+-15V VCC)
+	Supply: +-5 to +-15V
+LM833 (-)
+	Как-то не очень понравился мне по параметрам из даташита...
+	Способен выдать относительно низкий ток, к тому же разный в оба направления
+LM4562 (-)
+	Power Supply Voltage Range: ±2.5V to ± 17V
+	THD+N (AV = 1, VOUT = 3VRMS, fIN = 1kHz)
+		±17V. Over this supply range the LM4562’s input
+		– RL = 2kΩ: 0.00003% (typ) 
+		- RL = 600Ω: 0.00003% (typ) 
+	Output Current (RL = 600Ω, VS = ±17V): typ ±26ma (short circuit = -42 .. +53)
+	Маловатый ток выдает имхо...
+NJM4556A
+	Supply: +-2 to +-18V
+	Freq:  8MHz
+	Input impedance: 5M (min = 0.3M)
+	Peak-to-Peak: typ 13.5V
+	High Output Current ( IO=70mA )
+	Широкий диапазон выходного напряжения (от 2.1V до 7.5V при работе на нагрузку в 40ma при напряжении питания 9V)
+	JRC 4556 оказался самым лучшим при больших токах нагрузки.
+OPA2134
+	Ultra Low Distortion: 0.00008%
+	Wide Supply Range: ±2.5 V to ±18 V
+	Freq: typ 8MHz
+	Input impedance: 10^13 ohms
+	Current output: +-35ma (short circuit = +-40ma)
+	Широкий диапазон выходного напряжения, но хуже, чем у NJM4556A
+	Продолжительно выдерживает короткое замыкание (инфа из даташита)
+	Оказался далеко не лучшим в тесте при большом выходном токе – это для меня полнейшая неожиданность :C
+OPA2132
+	То же, что и OPA2134, но судя по форумам OPA2132 лучше держит низкоомную нагрузку
+AD8066
+	High speed: 145 MHz, −3 dB bandwidth (G = +1)
+	Wide supply voltage range: 5 V to 24 V
+	Single-supply and rail-to-rail output
+	Output current: 35ma (short circuit = 90ma)
+	Размах амплитуды почти до +-питания
+AD8397
+	Wide supply range from 3 V to 24 V
+	310 mA peak into 32 Ω on ±12 V supplies while maintaining
+	Low noise
+	Audio applications
+	Input impedance: typ 87k
+
+
+
+http://www.electroclub.info/other/i_out_ou_0.htm
+http://neolit-rie.ru/zvukovye-texnologii/vysokokachestvennyj-usilitel-dlya-naushnikov-na-ou-po-razumnoj-cene/
+
+	
+
+For example (datasheet NJM4556A):
+( DIP8 ) 700 mW
+( DMP8 ) 300 mW
+( SSOP8 ) 250 mW
+( SIP8 ) 800 mW
