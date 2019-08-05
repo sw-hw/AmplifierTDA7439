@@ -1,0 +1,15 @@
+ILI9488_STM32_Driver.c:11:6:ILI9488_SPI_Send	16	static
+ILI9488_STM32_Driver.c:18:6:ILI9488_Write_Command	16	static
+ILI9488_STM32_Driver.c:27:6:ILI9488_Write_Data	16	static
+ILI9488_STM32_Driver.c:36:6:ILI9488_Set_Address	24	static
+ILI9488_STM32_Driver.c:54:6:ILI9488_Set_Rotation	24	static
+ILI9488_STM32_Driver.c:88:6:ILI9488_LedEnable	8	static
+ILI9488_STM32_Driver.c:94:6:ILI9488_LedDisable	8	static
+ILI9488_STM32_Driver.c:99:6:init_ILI9488	8	static
+ILI9488_STM32_Driver.c:182:6:ILI9488_Init	8	static
+ILI9488_STM32_Driver.c:192:6:ILI9488_Fill_Screen	16	static
+ILI9488_STM32_Driver.c:246:6:ILI9341_Draw_Colour_Burst	56	dynamic
+ILI9488_STM32_Driver.c:288:6:ILI9341_Draw_Pixel	24	static
+ILI9488_STM32_Driver.c:308:6:ILI9341_Draw_Rectangle	24	static
+ILI9488_STM32_Driver.c:324:6:ILI9341_Draw_Horizontal_Line	24	static
+ILI9488_STM32_Driver.c:336:6:ILI9341_Draw_Vertical_Line	24	static
