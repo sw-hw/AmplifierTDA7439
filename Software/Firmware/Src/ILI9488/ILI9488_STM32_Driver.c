@@ -35,6 +35,10 @@ void ILI9488_Write_Data(uint8_t Data)
 /* Set Address - Location block - to draw into */
 void ILI9488_Set_Address(uint16_t X1, uint16_t Y1, uint16_t X2, uint16_t Y2)
 {
+	/* TODO
+	 * Попробовать убрать второй блок и/или попробовать убрать передачу конечной координаты
+	 */
+
 	ILI9488_Write_Command(0x2A);
 	ILI9488_Write_Data(X1 >> 8);
 	ILI9488_Write_Data(X1);
@@ -191,59 +195,13 @@ void ILI9488_Init(void)
 /*Sets address (entire screen) and Sends Height*Width ammount of colour information to LCD*/
 void ILI9488_Fill_Screen(uint8_t Colour)
 {
-	ILI9488_Set_Address(0, 0, LCD_WIDTH >> 1, LCD_HEIGHT >> 1);
-	ILI9341_Draw_Colour_Burst(Colour, LCD_WIDTH_x_LCD_HEIGHT);
+	ILI9488_Set_Address(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
+	ILI9488_Draw_Colour_Burst(Colour, LCD_WIDTH_x_LCD_HEIGHT);
 }
 
 //INTERNAL FUNCTION OF LIBRARY
 /*Sends block colour information to LCD*/
-/*void ILI9341_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
-{
-//SENDS COLOUR
-uint32_t Buffer_Size = 0;
-if((Size*3) < BURST_MAX_SIZE)
-{
-	Buffer_Size = Size;
-}
-else
-{
-	Buffer_Size = BURST_MAX_SIZE;
-}
-	
-HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);	
-HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-
-uint8_t r = ((Colour & 0xF800) >> 11) * 255UL / 31UL;
-uint8_t g = ((Colour & 0x07E0) >> 5) * 255UL / 63UL;
-uint8_t b = (Colour & 0x001F) * 255L / 31UL;
-
-unsigned char burst_buffer[Buffer_Size];
-for(uint32_t j = 0; j < Buffer_Size; j+=3)
-	{
-		burst_buffer[j] = 	r;
-		burst_buffer[j+1] = g;
-		burst_buffer[j+2] = b;
-	}
-
-uint32_t Sending_Size = Size*3;
-uint32_t Sending_in_Block = Sending_Size/Buffer_Size;
-uint32_t Remainder_from_block = Sending_Size%Buffer_Size;
-
-if(Sending_in_Block != 0)
-{
-	for(uint32_t j = 0; j < (Sending_in_Block); j++)
-		{
-		HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Buffer_Size, 10);	
-		}
-}
-
-//REMAINDER!
-HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Remainder_from_block, 10);	
-	
-HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
-}*/
-
-void ILI9341_Draw_Colour_Burst(uint8_t Colour, uint32_t Size)
+void ILI9488_Draw_Colour_Burst(uint8_t Colour, uint32_t Size)
 {
 	//SENDS COLOUR
 	Size = Size >> 1;
@@ -252,31 +210,18 @@ void ILI9341_Draw_Colour_Burst(uint8_t Colour, uint32_t Size)
 		Buffer_Size = BURST_MAX_SIZE;
 	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-
 	uint8_t byte = Colour & 0x07;
 	byte = 0x80 | (byte << 3) | byte;
-
 	unsigned char burst_buffer[Buffer_Size];
 	for(uint32_t j = 0; j < Buffer_Size; j++)
-	{
 		burst_buffer[j] = byte;
-	}
-
-uint32_t Sending_in_Block = Size / Buffer_Size;
-uint32_t Remainder_from_block = Size % Buffer_Size;
-
-if(Sending_in_Block != 0)
-{
+	uint32_t Sending_in_Block = Size / Buffer_Size;
+	uint32_t Remainder_from_block = Size % Buffer_Size;
 	for(uint32_t j = 0; j < (Sending_in_Block); j++)
-		{
 		HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Buffer_Size, 10);
-		}
-}
-
-//REMAINDER!
-HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Remainder_from_block, 10);
-
-HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
+	//REMAINDER!
+	HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Remainder_from_block, 10);
+	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
 }
 
 //DRAW PIXEL AT XY POSITION WITH SELECTED COLOUR
@@ -285,9 +230,9 @@ HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
 //Using pixels to draw big simple structures is not recommended as it is really slow
 //Try using either rectangles or lines if possible
 //
-void ILI9341_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour)
+void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour)
 {
-	ILI9488_Set_Address(X, Y, X + 1, Y + 1);
+	ILI9488_Set_Address(X, Y, X, Y);
 	HAL_Delay(1000);
 	//*
 	//COLOUR
@@ -304,43 +249,22 @@ void ILI9341_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour)
 //Rectangle is hollow. X and Y positions mark the upper left corner of rectangle
 //As with all other draw calls x0 and y0 locations dependant on screen orientation
 //
-
-void ILI9341_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour)
+void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint8_t Colour)
 {
-if((X >=LCD_WIDTH) || (Y >=LCD_HEIGHT)) return;
-if((X+Width-1)>=LCD_WIDTH)
-	{
-		Width=LCD_WIDTH-X;
-	}
-if((Y+Height-1)>=LCD_HEIGHT)
-	{
-		Height=LCD_HEIGHT-Y;
-	}
-ILI9488_Set_Address(X, Y, X+Width-1, Y+Height-1);
-ILI9341_Draw_Colour_Burst(Colour, Height*Width);
+	ILI9488_Set_Address(X, Y, X+Width-1, Y+Height-1);
+	ILI9488_Draw_Colour_Burst(Colour, Height*Width);
 }
 
 //DRAW LINE FROM X,Y LOCATION to X+Width,Y LOCATION
-void ILI9341_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Colour)
+void ILI9488_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint8_t Colour)
 {
-if((X >=LCD_WIDTH) || (Y >=LCD_HEIGHT)) return;
-if((X+Width-1)>=LCD_WIDTH)
-	{
-		Width=LCD_WIDTH-X;
-	}
-ILI9488_Set_Address(X, Y, X+Width-1, Y);
-ILI9341_Draw_Colour_Burst(Colour, Width);
+	ILI9488_Set_Address(X, Y, X+Width-1, Y);
+	ILI9488_Draw_Colour_Burst(Colour, Width);
 }
 
 //DRAW LINE FROM X,Y LOCATION to X,Y+Height LOCATION
-void ILI9341_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint16_t Colour)
+void ILI9488_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint8_t Colour)
 {
-if((X >=LCD_WIDTH) || (Y >=LCD_HEIGHT)) return;
-if((Y+Height-1)>=LCD_HEIGHT)
-	{
-		Height=LCD_HEIGHT-Y;
-	}
-ILI9488_Set_Address(X, Y, X, Y+Height-1);
-ILI9341_Draw_Colour_Burst(Colour, Height);
+	ILI9488_Set_Address(X, Y, X, Y+Height-1);
+	ILI9488_Draw_Colour_Burst(Colour, Height);
 }
-

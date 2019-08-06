@@ -126,9 +126,9 @@ int main(void)
   {
 	  //ILI9488_Fill_Screen(i & 0x07);
 	  // ===
-	  ILI9341_Draw_Pixel(12, 12, ILI9488_CYAN);
-	  ILI9341_Draw_Pixel(102, 102, ILI9488_CYAN);
-	  ILI9341_Draw_Pixel(202, 202, ILI9488_CYAN);
+	  ILI9488_Draw_Pixel(12, 12, ILI9488_CYAN);
+	  ILI9488_Draw_Pixel(102, 102, ILI9488_CYAN);
+	  ILI9488_Draw_Pixel(202, 202, ILI9488_CYAN);
 	  // ===
   }
   /*

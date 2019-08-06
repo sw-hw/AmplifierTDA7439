@@ -49,13 +49,11 @@ void ILI9488_LedEnable(void);
 void ILI9488_LedDisable(void);
 void ILI9488_Init(void);
 void ILI9488_Fill_Screen(uint8_t Colour);
-void ILI9341_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour);
-void ILI9341_Draw_Colour_Burst(uint8_t Colour, uint32_t Size);
-
-
-void ILI9341_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour);
-void ILI9341_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Colour);
-void ILI9341_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint16_t Colour);
+void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour);
+void ILI9488_Draw_Colour_Burst(uint8_t Colour, uint32_t Size);
+void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint8_t Colour);
+void ILI9488_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint8_t Colour);
+void ILI9488_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint8_t Colour);
 	
 #endif
 

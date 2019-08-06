@@ -14,14 +14,14 @@ void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
 
     while (x >= y)
     {
-        ILI9341_Draw_Pixel(X + x, Y + y, Colour);
-        ILI9341_Draw_Pixel(X + y, Y + x, Colour);
-        ILI9341_Draw_Pixel(X - y, Y + x, Colour);
-        ILI9341_Draw_Pixel(X - x, Y + y, Colour);
-        ILI9341_Draw_Pixel(X - x, Y - y, Colour);
-        ILI9341_Draw_Pixel(X - y, Y - x, Colour);
-        ILI9341_Draw_Pixel(X + y, Y - x, Colour);
-        ILI9341_Draw_Pixel(X + x, Y - y, Colour);
+        ILI9488_Draw_Pixel(X + x, Y + y, Colour);
+        ILI9488_Draw_Pixel(X + y, Y + x, Colour);
+        ILI9488_Draw_Pixel(X - y, Y + x, Colour);
+        ILI9488_Draw_Pixel(X - x, Y + y, Colour);
+        ILI9488_Draw_Pixel(X - x, Y - y, Colour);
+        ILI9488_Draw_Pixel(X - y, Y - x, Colour);
+        ILI9488_Draw_Pixel(X + y, Y - x, Colour);
+        ILI9488_Draw_Pixel(X + x, Y - y, Colour);
 
         if (err <= 0)
         {
@@ -52,13 +52,13 @@ void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
     {
         for (int i = X - x; i <= X + x; i++)
         {
-            ILI9341_Draw_Pixel(i, Y + y,Colour);
-            ILI9341_Draw_Pixel(i, Y - y,Colour);
+            ILI9488_Draw_Pixel(i, Y + y,Colour);
+            ILI9488_Draw_Pixel(i, Y - y,Colour);
         }
         for (int i = X - y; i <= X + y; i++)
         {
-            ILI9341_Draw_Pixel(i, Y + x,Colour);
-            ILI9341_Draw_Pixel(i, Y - x,Colour);
+            ILI9488_Draw_Pixel(i, Y + x,Colour);
+            ILI9488_Draw_Pixel(i, Y - x,Colour);
         }
 
         y++;
@@ -101,8 +101,8 @@ void ILI9341_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 	{
 		X_length = X0 - X1;		
 	}
-	ILI9341_Draw_Horizontal_Line(X0, Y0, X_length, Colour);
-	ILI9341_Draw_Horizontal_Line(X0, Y1, X_length, Colour);
+	ILI9488_Draw_Horizontal_Line(X0, Y0, X_length, Colour);
+	ILI9488_Draw_Horizontal_Line(X0, Y1, X_length, Colour);
 	
 	
 	
@@ -115,12 +115,12 @@ void ILI9341_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 	{
 		Y_length = Y0 - Y1;		
 	}
-	ILI9341_Draw_Vertical_Line(X0, Y0, Y_length, Colour);
-	ILI9341_Draw_Vertical_Line(X1, Y0, Y_length, Colour);
+	ILI9488_Draw_Vertical_Line(X0, Y0, Y_length, Colour);
+	ILI9488_Draw_Vertical_Line(X1, Y0, Y_length, Colour);
 	
 	if((X_length > 0)||(Y_length > 0)) 
 	{
-		ILI9341_Draw_Pixel(X1, Y1, Colour);
+		ILI9488_Draw_Pixel(X1, Y1, Colour);
 	}
 	
 }
@@ -169,7 +169,7 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 		Y0_true = Y1;	
 	}
 	
-	ILI9341_Draw_Rectangle(X0_true, Y0_true, X_length, Y_length, Colour);	
+	ILI9488_Draw_Rectangle(X0_true, Y0_true, X_length, Y_length, Colour);
 }
 
 /*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
@@ -194,17 +194,17 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 		}
 		
     // Draw pixels
-		ILI9341_Draw_Rectangle(X, Y, CHAR_WIDTH*Size, CHAR_HEIGHT*Size, Background_Colour);
+		ILI9488_Draw_Rectangle(X, Y, CHAR_WIDTH*Size, CHAR_HEIGHT*Size, Background_Colour);
     for (j=0; j<CHAR_WIDTH; j++) {
         for (i=0; i<CHAR_HEIGHT; i++) {
             if (temp[j] & (1<<i)) {			
 							if(Size == 1)
 							{
-              ILI9341_Draw_Pixel(X+j, Y+i, Colour);
+              ILI9488_Draw_Pixel(X+j, Y+i, Colour);
 							}
 							else
 							{
-							ILI9341_Draw_Rectangle(X+(j*Size), Y+(i*Size), Size, Size, Colour);
+							ILI9488_Draw_Rectangle(X+(j*Size), Y+(i*Size), Size, Size, Colour);
 							}
             }						
         }
