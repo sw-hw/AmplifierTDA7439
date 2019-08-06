@@ -35,10 +35,6 @@ void ILI9488_Write_Data(uint8_t Data)
 /* Set Address - Location block - to draw into */
 void ILI9488_Set_Address(uint16_t X1, uint16_t Y1, uint16_t X2, uint16_t Y2)
 {
-	/* TODO
-	 * Попробовать убрать второй блок и/или попробовать убрать передачу конечной координаты
-	 */
-
 	ILI9488_Write_Command(0x2A);
 	ILI9488_Write_Data(X1 >> 8);
 	ILI9488_Write_Data(X1);
@@ -100,6 +96,10 @@ void ILI9488_LedDisable(void)
 	HAL_GPIO_WritePin(LCD_LED_PORT, LCD_LED_PIN, GPIO_PIN_RESET);
 }
 
+
+/* https://github.com/jaretburkett/ILI9488
+ * TODO should use more correct settings
+ * */
 void init_ILI9488(void)
 {
 	ILI9488_Write_Command(0xE0);
@@ -136,7 +136,7 @@ void init_ILI9488(void)
 	ILI9488_Write_Data(0x37);
 	ILI9488_Write_Data(0x0F);
 
-	ILI9488_Write_Command(0xC0);      //Power Control 1
+	ILI9488_Write_Command(0XC0);      //Power Control 1
 	ILI9488_Write_Data(0x17);    //Vreg1out
 	ILI9488_Write_Data(0x15);    //Verg2out
 
@@ -152,28 +152,23 @@ void init_ILI9488(void)
 	ILI9488_Write_Data(0x48);
 
 	ILI9488_Write_Command(0x3A);      // Interface Pixel Format
-	//ILI9488_Write_Data(0x66); 	  //18 bit
-	ILI9488_Write_Data(0x51); 	  	  // DPI 16 bits/pixel; DBI 3 bits/pixel (8 color)
+	ILI9488_Write_Data(0x66); 	  //18 bit
 
-	ILI9488_Write_Command(0xB0);      // Interface Mode Control
+	ILI9488_Write_Command(0XB0);      // Interface Mode Control
 	ILI9488_Write_Data(0x80);     			 //SDO NOT USE
 
-	//ILI9488_Write_Command(0xB1);      //Frame Rate Control (In Normal Mode/Full Colors)
-	//ILI9488_Write_Data(0xA0);    //60Hz
-
-	// TODO if it won't help, try use init function from https://www.avrfreaks.net/sites/default/files/forum_attachments/ili9488.c
-	ILI9488_Write_Command(0xB2);	// Frame Rate Control (In Idle Mode/8 Colors)
-	ILI9488_Write_Data(0x03);		// fosc/8
-	ILI9488_Write_Data(0x1F);		// 31 clock per Line
+	ILI9488_Write_Command(0xB1);      //Frame rate
+	ILI9488_Write_Data(0xA0);    //60Hz
 
 	ILI9488_Write_Command(0xB4);      //Display Inversion Control
 	ILI9488_Write_Data(0x02);    //2-dot
 
-	ILI9488_Write_Command(0xB6);      //Display Function Control  RGB/MCU Interface Control
+	ILI9488_Write_Command(0XB6);      //Display Function Control  RGB/MCU Interface Control
+
 	ILI9488_Write_Data(0x02);    //MCU
 	ILI9488_Write_Data(0x02);    //Source,Gate scan dieection
 
-	ILI9488_Write_Command(0xE9);      // Set Image Functio
+	ILI9488_Write_Command(0XE9);      // Set Image Functio
 	ILI9488_Write_Data(0x00);    // Disable 24 bit data
 
 	ILI9488_Write_Command(0xF7);      // Adjust Control
@@ -198,7 +193,7 @@ void ILI9488_Init(void)
 
 //FILL THE ENTIRE SCREEN WITH SELECTED COLOUR
 /*Sets address (entire screen) and Sends Height*Width ammount of colour information to LCD*/
-void ILI9488_Fill_Screen(uint8_t Colour)
+void ILI9488_Fill_Screen(uint16_t Colour)
 {
 	ILI9488_Set_Address(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
 	ILI9488_Draw_Colour_Burst(Colour, LCD_WIDTH_x_LCD_HEIGHT);
@@ -206,23 +201,28 @@ void ILI9488_Fill_Screen(uint8_t Colour)
 
 //INTERNAL FUNCTION OF LIBRARY
 /*Sends block colour information to LCD*/
-void ILI9488_Draw_Colour_Burst(uint8_t Colour, uint32_t Size)
+void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 {
 	//SENDS COLOUR
-	Size = Size >> 1;
+	Size = Size * 3;
 	uint32_t Buffer_Size = Size;
 	if(Buffer_Size > BURST_MAX_SIZE)
 		Buffer_Size = BURST_MAX_SIZE;
 	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-	uint8_t byte = Colour & 0x07;
-	byte = 0x80 | (byte << 3) | byte;
+	uint8_t r = (((Colour & 0xF800) >> 11) * 255) / 31;
+	uint8_t g = (((Colour & 0x07E0) >> 5) * 255) / 63;
+	uint8_t b = ((Colour & 0x001F) * 255) / 31;
 	unsigned char burst_buffer[Buffer_Size];
-	for(uint32_t j = 0; j < Buffer_Size; j++)
-		burst_buffer[j] = byte;
+	for(uint32_t j = 0; j < Buffer_Size; j+=3)
+	{
+		burst_buffer[j] = r;
+		burst_buffer[j+1] = g;
+		burst_buffer[j+2] = b;
+	}
 	uint32_t Sending_in_Block = Size / Buffer_Size;
 	uint32_t Remainder_from_block = Size % Buffer_Size;
-	for(uint32_t j = 0; j < (Sending_in_Block); j++)
+	for(uint32_t j = 0; j < Sending_in_Block; j++)
 		HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Buffer_Size, 10);
 	//REMAINDER!
 	HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Remainder_from_block, 10);
@@ -235,18 +235,18 @@ void ILI9488_Draw_Colour_Burst(uint8_t Colour, uint32_t Size)
 //Using pixels to draw big simple structures is not recommended as it is really slow
 //Try using either rectangles or lines if possible
 //
-void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour)
+void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint16_t Colour)
 {
 	ILI9488_Set_Address(X, Y, X, Y);
-	HAL_Delay(1000);
-	//*
 	//COLOUR
 	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-	for(uint16_t i = 0; i < 0xFFFF; i++)
-		ILI9488_SPI_Send(0x80 | Colour);
+	uint8_t data[3];
+	data[0] = (((Colour & 0xF800) >> 11) * 255) / 31;
+	data[1] = (((Colour & 0x07E0) >> 5) * 255) / 63;
+	data[2] = ((Colour & 0x001F) * 255) / 31;
+	HAL_SPI_Transmit(HSPI_INSTANCE, data, 3, 1);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
-	//*/
 }
 
 //DRAW RECTANGLE OF SET SIZE AND HEIGTH AT X and Y POSITION WITH CUSTOM COLOUR

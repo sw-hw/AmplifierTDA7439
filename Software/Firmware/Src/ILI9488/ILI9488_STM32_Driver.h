@@ -24,16 +24,28 @@
 #define	LCD_LED_PORT							DISPLAY_LED_GPIO_Port
 #define	LCD_LED_PIN								DISPLAY_LED_Pin
 
-#define BURST_MAX_SIZE 	500
+#define BURST_MAX_SIZE 	501
 
-#define	ILI9488_BLACK	0x00
-#define	ILI9488_BLUE	0x01
-#define	ILI9488_GREEN	0x02
-#define ILI9488_CYAN	0x03
-#define	ILI9488_RED		0x04
-#define	ILI9488_MAGENTA	0x05
-#define	ILI9488_YELLOW	0x06
-#define	ILI9488_WHITE	0x07
+// Color definitions
+#define ILI9488_BLACK       0x0000      /*   0,   0,   0 */
+#define ILI9488_NAVY        0x000F      /*   0,   0, 128 */
+#define ILI9488_DARKGREEN   0x03E0      /*   0, 128,   0 */
+#define ILI9488_DARKCYAN    0x03EF      /*   0, 128, 128 */
+#define ILI9488_MAROON      0x7800      /* 128,   0,   0 */
+#define ILI9488_PURPLE      0x780F      /* 128,   0, 128 */
+#define ILI9488_OLIVE       0x7BE0      /* 128, 128,   0 */
+#define ILI9488_LIGHTGREY   0xC618      /* 192, 192, 192 */
+#define ILI9488_DARKGREY    0x7BEF      /* 128, 128, 128 */
+#define ILI9488_BLUE        0x001F      /*   0,   0, 255 */
+#define ILI9488_GREEN       0x07E0      /*   0, 255,   0 */
+#define ILI9488_CYAN        0x07FF      /*   0, 255, 255 */
+#define ILI9488_RED         0xF800      /* 255,   0,   0 */
+#define ILI9488_MAGENTA     0xF81F      /* 255,   0, 255 */
+#define ILI9488_YELLOW      0xFFE0      /* 255, 255,   0 */
+#define ILI9488_WHITE       0xFFFF      /* 255, 255, 255 */
+#define ILI9488_ORANGE      0xFD20      /* 255, 165,   0 */
+#define ILI9488_GREENYELLOW 0xAFE5      /* 173, 255,  47 */
+#define ILI9488_PINK        0xF81F
 
 #define SCREEN_VERTICAL_1		0
 #define SCREEN_HORIZONTAL_1		1
@@ -48,12 +60,12 @@ void ILI9488_Set_Rotation(uint8_t Rotation);
 void ILI9488_LedEnable(void);
 void ILI9488_LedDisable(void);
 void ILI9488_Init(void);
-void ILI9488_Fill_Screen(uint8_t Colour);
-void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint8_t Colour);
-void ILI9488_Draw_Colour_Burst(uint8_t Colour, uint32_t Size);
+void ILI9488_Fill_Screen(uint16_t Colour);
+void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint16_t Colour);
+void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size);
+// TODO rewrite following functions for 16 bit colour
 void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint8_t Colour);
 void ILI9488_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint8_t Colour);
 void ILI9488_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint8_t Colour);
 	
 #endif
-

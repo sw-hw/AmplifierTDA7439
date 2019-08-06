@@ -118,18 +118,29 @@ int main(void)
   init_amplifier();
   // ===
   ILI9488_Init();//initial driver setup to drive ili9488
-  HAL_Delay(500);
-
-  //ILI9341_Draw_Pixel(100, 100, BLUE);
-  ///*
+  /*HAL_Delay(500);
+  HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);
+  uint8_t com = 0x0E;
+  HAL_SPI_Transmit(&hspi2, &com, 1, 1);
+  uint8_t data[5];
+  data[0] = 0;
+  data[1] = 0;
+  data[2] = 0;
+  data[3] = 0;
+  data[4] = 0;
+  HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
+  HAL_SPI_TransmitReceive(&hspi2, data, data, 5, 1);
+  */
   for(uint16_t i = 0; i < 0xFFFF; i++)
   {
-	  //ILI9488_Fill_Screen(i & 0x07);
-	  // ===
-	  ILI9488_Draw_Pixel(12, 12, ILI9488_CYAN);
-	  ILI9488_Draw_Pixel(102, 102, ILI9488_CYAN);
-	  ILI9488_Draw_Pixel(202, 202, ILI9488_CYAN);
-	  // ===
+	  ILI9488_Fill_Screen(i & 1 ? ILI9488_RED : ILI9488_YELLOW);
+	  //* ===
+	  ILI9488_Draw_Pixel(0, 0, ILI9488_RED);
+	  ILI9488_Draw_Pixel(100, 100, ILI9488_GREEN);
+	  ILI9488_Draw_Pixel(200, 200, ILI9488_BLUE);
+	  // === */
+	  HAL_Delay(1000);
   }
   /*
   ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
