@@ -153,13 +153,18 @@ void init_ILI9488(void)
 
 	ILI9488_Write_Command(0x3A);      // Interface Pixel Format
 	//ILI9488_Write_Data(0x66); 	  //18 bit
-	ILI9488_Write_Data(0x71); 	  	  //3 bit
+	ILI9488_Write_Data(0x51); 	  	  // DPI 16 bits/pixel; DBI 3 bits/pixel (8 color)
 
 	ILI9488_Write_Command(0xB0);      // Interface Mode Control
 	ILI9488_Write_Data(0x80);     			 //SDO NOT USE
 
-	ILI9488_Write_Command(0xB1);      //Frame rate
-	ILI9488_Write_Data(0xA0);    //60Hz
+	//ILI9488_Write_Command(0xB1);      //Frame Rate Control (In Normal Mode/Full Colors)
+	//ILI9488_Write_Data(0xA0);    //60Hz
+
+	// TODO if it won't help, try use init function from https://www.avrfreaks.net/sites/default/files/forum_attachments/ili9488.c
+	ILI9488_Write_Command(0xB2);	// Frame Rate Control (In Idle Mode/8 Colors)
+	ILI9488_Write_Data(0x03);		// fosc/8
+	ILI9488_Write_Data(0x1F);		// 31 clock per Line
 
 	ILI9488_Write_Command(0xB4);      //Display Inversion Control
 	ILI9488_Write_Data(0x02);    //2-dot
