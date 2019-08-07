@@ -254,21 +254,21 @@ void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint16_t Colour)
 //Rectangle is hollow. X and Y positions mark the upper left corner of rectangle
 //As with all other draw calls x0 and y0 locations dependant on screen orientation
 //
-void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint8_t Colour)
+void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour)
 {
 	ILI9488_Set_Address(X, Y, X+Width-1, Y+Height-1);
 	ILI9488_Draw_Colour_Burst(Colour, Height*Width);
 }
 
 //DRAW LINE FROM X,Y LOCATION to X+Width,Y LOCATION
-void ILI9488_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint8_t Colour)
+void ILI9488_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Colour)
 {
 	ILI9488_Set_Address(X, Y, X+Width-1, Y);
 	ILI9488_Draw_Colour_Burst(Colour, Width);
 }
 
 //DRAW LINE FROM X,Y LOCATION to X,Y+Height LOCATION
-void ILI9488_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint8_t Colour)
+void ILI9488_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint16_t Colour)
 {
 	ILI9488_Set_Address(X, Y, X, Y+Height-1);
 	ILI9488_Draw_Colour_Burst(Colour, Height);
