@@ -4,7 +4,7 @@
 #include "spi.h"
 
 /*Draw hollow circle at X,Y location with specified radius and colour. X and Y represent circles center */
-void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour)
+void ILI9488_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour)
 {
 	int x = Radius-1;
     int y = 0;
@@ -39,7 +39,7 @@ void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
 }
 
 /*Draw filled circle at X,Y location with specified radius and colour. X and Y represent circles center */
-void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour)
+void ILI9488_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour)
 {
 	
 		int x = Radius;
@@ -76,7 +76,7 @@ void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
 }
 
 /*Draw a hollow rectangle between positions X0,Y0 and X1,Y1 with specified colour*/
-void ILI9341_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1, uint16_t Colour)
+void ILI9488_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1, uint16_t Colour)
 {
 	uint16_t 	X_length = 0;
 	uint16_t 	Y_length = 0;
@@ -126,7 +126,7 @@ void ILI9341_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 }
 
 /*Draw a filled rectangle between positions X0,Y0 and X1,Y1 with specified colour*/
-void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1, uint16_t Colour)
+void ILI9488_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1, uint16_t Colour)
 {
 	uint16_t 	X_length = 0;
 	uint16_t 	Y_length = 0;
@@ -174,7 +174,7 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 
 /*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour) 
+void ILI9488_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour)
 {
 		uint8_t 	function_char;
     uint8_t 	i,j;
@@ -213,10 +213,10 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Text(const char* Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour)
+void ILI9488_Draw_Text(const char* Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour)
 {
     while (*Text) {
-        ILI9341_Draw_Char(*Text++, X, Y, Colour, Size, Background_Colour);
+        ILI9488_Draw_Char(*Text++, X, Y, Colour, Size, Background_Colour);
         X += CHAR_WIDTH*Size;
     }
 }
