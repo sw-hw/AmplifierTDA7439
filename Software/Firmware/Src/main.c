@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 #include "i2c.h"
 #include "spi.h"
 #include "gpio.h"
@@ -54,6 +55,7 @@
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void MX_FREERTOS_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -64,7 +66,7 @@ void SystemClock_Config(void);
 void init_amplifier()
 {
 	  HAL_Delay(1000);
-	  //HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
 	  HAL_Delay(2000);
 	  uint8_t data[9];
 	  data[0] = 0x10; 		// start subaddress and auto increment mode
@@ -77,8 +79,26 @@ void init_amplifier()
 	  data[7] = 0b0000000;	// first speaker attenuation
 	  data[8] = 0b0000000;	// second speaker attenuation
 	  HAL_I2C_Master_Transmit(&hi2c1, 0x0088, data, 9, 1000);
-	  //HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_SET);
 }
+
+/*
+void read_data_display()
+{
+	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);
+	uint8_t com = 0x0E;
+	HAL_SPI_Transmit(&hspi2, &com, 1, 1);
+	uint8_t data[5];
+	data[0] = 0;
+	data[1] = 0;
+	data[2] = 0;
+	data[3] = 0;
+	data[4] = 0;
+	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
+	HAL_SPI_TransmitReceive(&hspi2, data, data, 5, 1);
+}
+/*
 
 /* USER CODE END 0 */
 
@@ -116,49 +136,22 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_Delay(1000);
   init_amplifier();
-  // ===
   ILI9488_Init();//initial driver setup to drive ili9488
-  /*HAL_Delay(500);
-  HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);
-  uint8_t com = 0x0E;
-  HAL_SPI_Transmit(&hspi2, &com, 1, 1);
-  uint8_t data[5];
-  data[0] = 0;
-  data[1] = 0;
-  data[2] = 0;
-  data[3] = 0;
-  data[4] = 0;
-  HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
-  HAL_SPI_TransmitReceive(&hspi2, data, data, 5, 1);
-  */
-  for(uint16_t i = 0; i < 0xFFFF; i++)
-  {
-	  ILI9488_Fill_Screen(i & 1 ? ILI9488_RED : ILI9488_YELLOW);
-	  //* ===
-	  ILI9488_Draw_Pixel(0, 0, ILI9488_RED);
-	  ILI9488_Draw_Pixel(100, 100, ILI9488_GREEN);
-	  ILI9488_Draw_Pixel(200, 200, ILI9488_BLUE);
-	  // === */
-	  HAL_Delay(1000);
-  }
-  /*
-  ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
-  		ILI9341_Draw_Text("FPS TEST, 40 loop 2 screens", 10, 10, BLACK, 1, WHITE);
-  		HAL_Delay(2000);
-  		ILI9341_Fill_Screen(GREEN);
-  //*/
-
-  //test_display();
-
+  HAL_Delay(1000);
   /* USER CODE END 2 */
+
+  /* Call init function for freertos objects (in freertos.c) */
+  MX_FREERTOS_Init(); 
+
+  /* Start scheduler */
+  osKernelStart();
+  
+  /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
-	HAL_Delay(500);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -206,6 +199,27 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @note   This function is called  when TIM4 interrupt took place, inside
+  * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
+  * a global variable "uwTick" used as application time base.
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM4) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

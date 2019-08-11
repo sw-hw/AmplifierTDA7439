@@ -24,7 +24,7 @@
 #define	LCD_LED_PORT							DISPLAY_LED_GPIO_Port
 #define	LCD_LED_PIN								DISPLAY_LED_Pin
 
-#define BURST_MAX_SIZE 	501
+#define BURST_MAX_SIZE 	51
 
 // Color definitions
 #define ILI9488_BLACK       0x0000      /*   0,   0,   0 */
