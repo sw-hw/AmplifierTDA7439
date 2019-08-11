@@ -139,11 +139,21 @@ void StartTaskILI9488(void const * argument)
   /* Infinite loop */
   for(uint32_t i = 0;;i++)
   {
-	  ILI9488_Fill_Screen(i & 1 ? ILI9488_RED : ILI9488_YELLOW);
+	  switch(i % 3)
+	  {
+	  	  case 0:
+	  		  ILI9488_Fill_Screen(ILI9488_RED);
+	  		  break;
+	  	  case 1:
+	  		  ILI9488_Fill_Screen(ILI9488_BLUE);
+	  		  break;
+	  	  case 2:
+	  		  ILI9488_Fill_Screen(ILI9488_GREEN);
+	  		  break;
+	  }
 	  ILI9488_Draw_Pixel(0, 0, ILI9488_RED);
 	  ILI9488_Draw_Pixel(100, 100, ILI9488_GREEN);
 	  ILI9488_Draw_Pixel(200, 200, ILI9488_BLUE);
-	  osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */
 }

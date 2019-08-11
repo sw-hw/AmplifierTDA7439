@@ -203,29 +203,19 @@ void ILI9488_Fill_Screen(uint16_t Colour)
 /*Sends block colour information to LCD*/
 void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 {
-	//SENDS COLOUR
-	Size = Size * 3;
-	uint32_t Buffer_Size = Size;
-	if(Buffer_Size > BURST_MAX_SIZE)
-		Buffer_Size = BURST_MAX_SIZE;
 	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-	uint8_t r = (((Colour & 0xF800) >> 11) * 255) / 31;
-	uint8_t g = (((Colour & 0x07E0) >> 5) * 255) / 63;
-	uint8_t b = ((Colour & 0x001F) * 255) / 31;
-	unsigned char burst_buffer[Buffer_Size];
-	for(uint32_t j = 0; j < Buffer_Size; j+=3)
-	{
-		burst_buffer[j] = r;
-		burst_buffer[j+1] = g;
-		burst_buffer[j+2] = b;
-	}
-	uint32_t Sending_in_Block = Size / Buffer_Size;
-	uint32_t Remainder_from_block = Size % Buffer_Size;
-	for(uint32_t j = 0; j < Sending_in_Block; j++)
-		HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Buffer_Size, 10);
-	//REMAINDER!
-	HAL_SPI_Transmit(HSPI_INSTANCE, (unsigned char *)burst_buffer, Remainder_from_block, 10);
+	uint8_t data[3];
+	data[0] = (((Colour & 0xF800) >> 11) * 255) / 31; // r
+	data[1] = (((Colour & 0x07E0) >> 5) * 255) / 63;  // g
+	data[2] = ((Colour & 0x001F) * 255) / 31;		  // b
+	// TODO Всё равно выходит довольно тухлая скорость отрисовки, надо бы смотреть в сторону 3 битных цветов...
+	for(; Size; Size--)
+		for(uint8_t i = 0; i < 3;)
+			if(__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
+				*((__IO uint8_t *)HSPI_INSTANCE.Instance->DR) = data[i++];
+	/* Clear overrun flag in 2 Lines communication mode because received is not read */
+	__HAL_SPI_CLEAR_OVRFLAG(HSPI_INSTANCE);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
 }
 
