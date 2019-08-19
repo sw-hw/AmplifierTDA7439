@@ -25,7 +25,8 @@
 #include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */     
+/* USER CODE BEGIN Includes */
+#include "TDA7439/TDA7439.h"
 #include "ILI9488/ILI9488_STM32_Driver.h"
 #include "ILI9488/ILI9488_GFX.h"
 /* USER CODE END Includes */
@@ -118,10 +119,20 @@ void StartDefaultTask(void const * argument)
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
+  GPIO_PinState last_state_encoder_a = GPIO_PIN_SET;
   for(;;)
   {
+	taskENTER_CRITICAL();
+	GPIO_PinState current_state_encoder_a = HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin);
+	if(last_state_encoder_a == GPIO_PIN_SET && current_state_encoder_a == GPIO_PIN_RESET)
+		TDA7439_EncoderRotate(HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin));
+	last_state_encoder_a = current_state_encoder_a;
+	// ===
+	TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_C_GPIO_Port, ENCODER_C_Pin));
+	// ===
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
-	osDelay(500);
+	taskEXIT_CRITICAL();
+	osDelay(100);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -137,23 +148,10 @@ void StartTaskILI9488(void const * argument)
 {
   /* USER CODE BEGIN StartTaskILI9488 */
   /* Infinite loop */
-  for(uint32_t i = 0;;i++)
+  for(;;)
   {
-	  switch(i % 3)
-	  {
-	  	  case 0:
-	  		  ILI9488_Fill_Screen(ILI9488_RED);
-	  		  break;
-	  	  case 1:
-	  		  ILI9488_Fill_Screen(ILI9488_BLUE);
-	  		  break;
-	  	  case 2:
-	  		  ILI9488_Fill_Screen(ILI9488_GREEN);
-	  		  break;
-	  }
-	  ILI9488_Draw_Pixel(0, 0, ILI9488_RED);
-	  ILI9488_Draw_Pixel(100, 100, ILI9488_GREEN);
-	  ILI9488_Draw_Pixel(200, 200, ILI9488_BLUE);
+	  // TODO
+	  osDelay(100);
   }
   /* USER CODE END StartTaskILI9488 */
 }

@@ -58,6 +58,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ENCODER_A_Pin GPIO_PIN_4
+#define ENCODER_A_GPIO_Port GPIOA
+#define ENCODER_B_Pin GPIO_PIN_5
+#define ENCODER_B_GPIO_Port GPIOA
+#define ENCODER_C_Pin GPIO_PIN_6
+#define ENCODER_C_GPIO_Port GPIOA
 #define RELAY_Pin GPIO_PIN_1
 #define RELAY_GPIO_Port GPIOB
 #define LED_BLUE_Pin GPIO_PIN_2
