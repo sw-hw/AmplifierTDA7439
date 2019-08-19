@@ -27,8 +27,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "ILI9488/ILI9488_STM32_Driver.h"
-#include "ILI9488/ILI9488_GFX.h"
+#include "TDA7439/TDA7439.h"
 //#include "stdlib.h"
 /* USER CODE END Includes */
 
@@ -62,43 +61,6 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-void init_amplifier()
-{
-	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
-	  HAL_Delay(2000);
-	  uint8_t data[9];
-	  data[0] = 0x10; 		// start subaddress and auto increment mode
-	  data[1] = 0b11; 		// multiplexer
-	  data[2] = 0b0000;		// input gain
-	  data[3] = 0b0000; 	// volume
-	  data[4] = 0b1101; 	// bass (0b0000 to 0b0111 to 0b1000)
-	  data[5] = 0b0000; 	// mid-range (0b0000 to 0b0111 to 0b1000)
-	  data[6] = 0b1000; 	// treble (0b0000 to 0b01111 to 0b1000)
-	  data[7] = 0b0000000;	// first speaker attenuation
-	  data[8] = 0b0000000;	// second speaker attenuation
-	  HAL_I2C_Master_Transmit(&hi2c1, 0x0088, data, 9, 1000);
-	  HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_SET);
-}
-
-/*
-void read_data_display()
-{
-	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_RESET);
-	uint8_t com = 0x0E;
-	HAL_SPI_Transmit(&hspi2, &com, 1, 1);
-	uint8_t data[5];
-	data[0] = 0;
-	data[1] = 0;
-	data[2] = 0;
-	data[3] = 0;
-	data[4] = 0;
-	HAL_GPIO_WritePin(LCD_DC_PORT, LCD_DC_PIN, GPIO_PIN_SET);
-	HAL_SPI_TransmitReceive(&hspi2, data, data, 5, 1);
-}
-/*
 
 /* USER CODE END 0 */
 
@@ -134,10 +96,7 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI2_Init();
   /* USER CODE BEGIN 2 */
-  HAL_Delay(1000);
-  init_amplifier();
-  ILI9488_Init();//initial driver setup to drive ili9488
-  HAL_Delay(1000);
+
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
