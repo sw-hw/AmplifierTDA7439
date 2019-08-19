@@ -32,18 +32,18 @@ void TDA7439_EncoderRotate(uint8_t inc); 	// 0 - decrement; 1 - increment
 
 // === macros for bass, mid, treble ===
 #define TDA7439_EQ_INC(value) { 		\
-	if(value < 0x07)					\
-		value++;						\
-	else if(value == 0x07)				\
+	if(value == 0x07)					\
 		value = 0x0E;					\
+	else if(value < 0x07)				\
+		value++;						\
 	else if(value > 0x08)				\
 		value--;			 			\
 }
 #define TDA7439_EQ_DEC(value) { 		\
-	if(value > 0x07)					\
-		value++;						\
-	else if(value == 0x0E)				\
+	if(value == 0x0E)					\
 		value = 0x07;					\
+	else if(value > 0x07)				\
+		value++;						\
 	else if(value > 0x00)				\
 		value--;						\
 }

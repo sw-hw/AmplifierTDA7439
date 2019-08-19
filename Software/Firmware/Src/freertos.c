@@ -25,7 +25,7 @@
 #include "cmsis_os.h"
 
 /* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
+/* USER CODE BEGIN Includes */     
 #include "TDA7439/TDA7439.h"
 #include "ILI9488/ILI9488_STM32_Driver.h"
 #include "ILI9488/ILI9488_GFX.h"
@@ -119,16 +119,10 @@ void StartDefaultTask(void const * argument)
 
   /* USER CODE BEGIN StartDefaultTask */
   /* Infinite loop */
-  GPIO_PinState last_state_encoder_a = GPIO_PIN_SET;
   for(;;)
   {
 	taskENTER_CRITICAL();
-	GPIO_PinState current_state_encoder_a = HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin);
-	if(last_state_encoder_a == GPIO_PIN_SET && current_state_encoder_a == GPIO_PIN_RESET)
-		TDA7439_EncoderRotate(HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin));
-	last_state_encoder_a = current_state_encoder_a;
-	// ===
-	TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_C_GPIO_Port, ENCODER_C_Pin));
+	TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
 	// ===
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 	taskEXIT_CRITICAL();
