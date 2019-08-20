@@ -114,26 +114,37 @@ void TDA7439_EncoderRotate(uint8_t inc)
 		case TDA7439_MARKER_GAIN:
 			if(inc)
 			{
-				if(TDA7439_data[2] != 0x0F)
-					TDA7439_data[2]++;
+				if(TDA7439_data[3] == 0) // if volume equals 0 dB
+				{
+					if(TDA7439_data[2] != 0x0F) // if gain not equals +30 dB
+						TDA7439_data[2]++;
+				}
+				else
+					TDA7439_data[3]--;
 			}
 			else
 			{
-				if(TDA7439_data[2] != 0)
+				if(TDA7439_data[2] == 0) // if gain equals 0 dB
+				{
+					if(TDA7439_data[3] != 40) // if volume not equals -40 dB
+						TDA7439_data[3]++;
+				}
+				else
 					TDA7439_data[2]--;
 			}
 			break;
 		case TDA7439_MARKER_VOLUME:
 			if(inc)
 			{
-				if(TDA7439_data[3] != 0) // 0 dB
-					TDA7439_data[3]--;
+				if(TDA7439_data[7] != 0) // if first speaker attenuate not equals 0 dB
+					TDA7439_data[7]--;
 			}
 			else
 			{
-				if(TDA7439_data[3] != 40) // -40 dB
-					TDA7439_data[3]++;
+				if(TDA7439_data[7] != 72) // if first speaker attenuate not equals -72 dB
+					TDA7439_data[7]++;
 			}
+			TDA7439_data[8] = TDA7439_data[7]; // set for second channel attenuate according first channel
 			break;
 		case TDA7439_MARKER_BASS:
 			if(inc)
