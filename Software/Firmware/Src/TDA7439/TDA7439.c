@@ -62,14 +62,17 @@ void TDA7439_EncoderButton(uint8_t state)
 				TDA7439_DisplayRedrawSelector();
 			}
 		}
-		else if(last_time != (~ 0UL) && HAL_GetTick() - last_time > TDA7439_TIME_TURN_OFF)
+		else if(last_time != (~ 0UL))
 		{
-			TDA7439_TurnOff();
-			last_time = ~ 0UL;
-			short_push = 0;
+			if(HAL_GetTick() - last_time > TDA7439_TIME_TURN_OFF)
+			{
+				TDA7439_TurnOff();
+				last_time = ~ 0UL;
+				short_push = 0;
+			}
+			else
+				short_push = 1;
 		}
-		else
-			short_push = 1;
 	}
 	else
 	{
