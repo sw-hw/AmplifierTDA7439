@@ -16,7 +16,8 @@
 // ==============
 
 typedef enum {
-	TDA7439_MARKER_HEAD = 0,
+	TDA7439_MARKER_HEAD = 0,	// Headphone amplifier
+	TDA7439_MARKER_POW_AMP,		// Power amplifier (switched by opto relay)
 	TDA7439_MARKER_MULTIPLEXER,
 	TDA7439_MARKER_GAIN,
 	TDA7439_MARKER_VOLUME,
