@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define CHAR_WIDTH 	8
-#define CHAR_HEIGHT 16
+#define CHAR_WIDTH	8
+#define CHAR_HEIGHT	16
 
 //' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ '
 // 96
@@ -206,8 +206,7 @@ static const uint8_t font_droid_sans_mono_8x16_utf8_32_127_data[] = {
 
 //'°'
 // 1
-#define FONT_DROID_SANS_MONO_8X16_UTF8_0XB0_0XB0_WIDTH 8
-#define FONT_DROID_SANS_MONO_8X16_UTF8_0XB0_0XB0_HEIGHT 16
+#define FONT_DROID_SANS_MONO_8X16_UTF8_0XB0_0XB0_SIMBOLS 1
 static const uint8_t font_droid_sans_mono_8x16_utf8_0xb0_0xb0_data[] = {
     0x00, 0x00, 0x30, 0x48, 0x48, 0x30, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -215,8 +214,7 @@ static const uint8_t font_droid_sans_mono_8x16_utf8_0xb0_0xb0_data[] = {
 
 //'ЀЁЂЃЄЅІЇЈЉЊЋЌЍЎЏАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдежзийклмнопрстуфхцчшщъыьэюяѐё'
 // 82
-#define FONT_DROID_SANS_MONO_8X16_UTF8_0X400_0X451_WIDTH 656
-#define FONT_DROID_SANS_MONO_8X16_UTF8_0X400_0X451_HEIGHT 16
+#define FONT_DROID_SANS_MONO_8X16_UTF8_0X400_0X451_SIMBOLS 82
 static const uint8_t font_droid_sans_mono_8x16_utf8_0x400_0x451_data[] = {
     0x00, 0xF8, 0x89, 0x8B, 0x8A, 0x88, 0x88, 0x00, 
     0x00, 0xF8, 0x8B, 0x88, 0x88, 0x8B, 0x88, 0x00, 
