@@ -34,6 +34,12 @@
 // ==============
 
 typedef enum {
+	ENCODER_ROTATE_NO = 0,
+	ENCODER_ROTATE_R,
+	ENCODER_ROTATE_L
+} EncoderRotate_t;
+
+typedef enum {
 	TDA7439_MARKER_HEAD = 0,	// Headphone amplifier
 	TDA7439_MARKER_POW_AMP,		// Power amplifier (switched by opto relay)
 	TDA7439_MARKER_MULTIPLEXER,
@@ -48,7 +54,7 @@ typedef enum {
 
 // === Interface functions ===
 void TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
-void TDA7439_EncoderRotate(uint8_t inc); 				// 0 - decrement; 1 - increment
+void TDA7439_EncoderRotate(EncoderRotate_t rotate);
 void TDA7439_DisplaySignal(float left, float right);	// left and right signal in dB
 // =================
 

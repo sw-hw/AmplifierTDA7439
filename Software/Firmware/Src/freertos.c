@@ -48,7 +48,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
-
+__IO EncoderRotate_t EncoderRotate = ENCODER_ROTATE_NO;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId TaskILI9488Handle;
@@ -122,11 +122,16 @@ void StartDefaultTask(void const * argument)
   for(;;)
   {
 	taskENTER_CRITICAL();
+	// ---
 	TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
-	// ===
+	// ---
+	TDA7439_EncoderRotate(EncoderRotate);
+	EncoderRotate = ENCODER_ROTATE_NO;
+	// ---
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+	// ---
 	taskEXIT_CRITICAL();
-	osDelay(100);
+	osDelay(50);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -152,7 +157,13 @@ void StartTaskILI9488(void const * argument)
 
 /* Private application code --------------------------------------------------*/
 /* USER CODE BEGIN Application */
-     
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+  UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+  if(GPIO_Pin == ENCODER_C_Pin)
+	  EncoderRotate = (HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin) == GPIO_PIN_SET) ? ENCODER_ROTATE_R : ENCODER_ROTATE_L;
+  taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+}
 /* USER CODE END Application */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

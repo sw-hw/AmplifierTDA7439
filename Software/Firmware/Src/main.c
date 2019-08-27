@@ -61,14 +61,7 @@ void MX_FREERTOS_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
-{
-  UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-  if(GPIO_Pin== ENCODER_C_Pin) {
-	  TDA7439_EncoderRotate(HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin));
-  }
-  taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
-}
+
 /* USER CODE END 0 */
 
 /**

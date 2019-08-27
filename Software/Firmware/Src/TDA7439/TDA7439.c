@@ -234,28 +234,30 @@ void TDA7439_EncoderButton(uint8_t state)
 	}
 }
 
-void TDA7439_EncoderRotate(uint8_t inc)
+void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 {
 	if(!HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
 		return;
 	switch(TDA7439_marker)
 	{
 		case TDA7439_MARKER_HEAD:
-			HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, inc ? GPIO_PIN_SET : GPIO_PIN_RESET);
-			//HAL_GPIO_TogglePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin);
+			if(rotate == ENCODER_ROTATE_R)
+				HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_SET);
+			else if(rotate == ENCODER_ROTATE_L)
+				HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_RESET);
 			break;
 		case TDA7439_MARKER_POW_AMP:
 			// TODO
 			break;
 		case TDA7439_MARKER_MULTIPLEXER:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 			{
 				if(TDA7439_data[1] == 0)
 					TDA7439_data[1] = 0x03;
 				else
 					TDA7439_data[1]--;
 			}
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 			{
 				if(TDA7439_data[1] == 0x03)
 					TDA7439_data[1] = 0;
@@ -264,7 +266,7 @@ void TDA7439_EncoderRotate(uint8_t inc)
 			}
 			break;
 		case TDA7439_MARKER_GAIN:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 			{
 				if(TDA7439_data[3] == 0) // if volume equals 0 dB
 				{
@@ -274,7 +276,7 @@ void TDA7439_EncoderRotate(uint8_t inc)
 				else
 					TDA7439_data[3]--;
 			}
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 			{
 				if(TDA7439_data[2] == 0) // if gain equals 0 dB
 				{
@@ -286,7 +288,7 @@ void TDA7439_EncoderRotate(uint8_t inc)
 			}
 			break;
 		case TDA7439_MARKER_VOLUME:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 			{
 				if(TDA7439_data[7] != 0 && TDA7439_data[8] != 0) // if both speaker attenuates are not equals 0 dB
 				{
@@ -294,7 +296,7 @@ void TDA7439_EncoderRotate(uint8_t inc)
 					TDA7439_data[8]--;
 				}
 			}
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 			{
 				if(TDA7439_data[7] != 72 && TDA7439_data[8] != 72) // if both speaker attenuates are not equals -72 dB
 				{
@@ -304,32 +306,32 @@ void TDA7439_EncoderRotate(uint8_t inc)
 			}
 			break;
 		case TDA7439_MARKER_BASS:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 				TDA7439_EQ_INC(TDA7439_data[4])
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 				TDA7439_EQ_DEC(TDA7439_data[4])
 			break;
 		case TDA7439_MARKER_MID:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 				TDA7439_EQ_INC(TDA7439_data[5])
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 				TDA7439_EQ_DEC(TDA7439_data[5])
 			break;
 		case TDA7439_MARKER_TREBLE:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 				TDA7439_EQ_INC(TDA7439_data[6])
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 				TDA7439_EQ_DEC(TDA7439_data[6])
 			break;
 		case TDA7439_MARKER_BALANCE:
-			if(inc)
+			if(rotate == ENCODER_ROTATE_R)
 			{
 				if(TDA7439_data[8] > TDA7439_data[7])
 					TDA7439_data[8]--;
 				else if(TDA7439_data[7] != 72) // if first speaker is not equals -72 dB
 					TDA7439_data[7]++;
 			}
-			else
+			else if(rotate == ENCODER_ROTATE_L)
 			{
 				if(TDA7439_data[7] > TDA7439_data[8])
 					TDA7439_data[7]--;
