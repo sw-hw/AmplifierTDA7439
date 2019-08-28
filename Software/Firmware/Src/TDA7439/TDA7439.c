@@ -335,15 +335,18 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 			{
 				if(TDA7439_data[7] > TDA7439_data[8])
 					TDA7439_data[7]--;
-				if(TDA7439_data[8] != 72) // if second speaker is not equals -72 dB
+				else if(TDA7439_data[8] != 72) // if second speaker is not equals -72 dB
 					TDA7439_data[8]++;
 			}
 			break;
 		case TDA7439_MARKER_enumMAX:
 			break;
 	}
-	TDA7439_I2C_Transmit();
-	TDA7439_DisplayRedrawVal(0);
+	if(rotate != ENCODER_ROTATE_NO)
+	{
+		TDA7439_I2C_Transmit();
+		TDA7439_DisplayRedrawVal(0);
+	}
 }
 
 void TDA7439_DisplaySignal(float left, float right)
