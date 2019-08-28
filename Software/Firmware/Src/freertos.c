@@ -31,6 +31,7 @@
 #include "ILI9488/ILI9488_GFX.h"
 #include "adc.h"
 #include <stdlib.h>
+#include <math.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -153,6 +154,7 @@ void StartDefaultTask(void const * argument)
 
   /* USER CODE BEGIN StartDefaultTask */
   const float adc_k = 0.001f;   // coef. IIR filter
+  const float ref_adc = 1500;	// reference value 0 dB
   float avg_left = 1UL << 11;
   float avg_right = 1UL << 11;
   /* Infinite loop */
@@ -167,11 +169,11 @@ void StartDefaultTask(void const * argument)
 	// ---
 	avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
 	ADC_Signals.avg_right = (int16_t)avg_right;
-	//float right_db = ADC_Signals.max_right
+	float right_db = -20 * log10(ref_adc / ADC_Signals.max_right);
 	ADC_Signals.max_right = 0;
 	avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
 	ADC_Signals.avg_left = (int16_t)avg_left;
-	//float left_db = ADC_Signals.max_left
+	float left_db = -20 * log10(ref_adc / ADC_Signals.max_left);
 	ADC_Signals.max_left = 0;
 	// ---
 	// TODO use right_db and left_db
