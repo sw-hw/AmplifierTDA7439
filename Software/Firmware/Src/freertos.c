@@ -29,11 +29,20 @@
 #include "TDA7439/TDA7439.h"
 #include "ILI9488/ILI9488_STM32_Driver.h"
 #include "ILI9488/ILI9488_GFX.h"
+#include "adc.h"
+#include <stdlib.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+typedef struct {
+	int16_t last_right;
+	int16_t avg_right;
+	int16_t max_right;
+	int16_t last_left;
+	int16_t avg_left;
+	int16_t max_left;
+} ADC_Signals_t;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -49,6 +58,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 __IO EncoderRotate_t EncoderRotate = ENCODER_ROTATE_NO;
+__IO ADC_Signals_t ADC_Signals;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId TaskILI9488Handle;
@@ -62,6 +72,30 @@ void StartDefaultTask(void const * argument);
 void StartTaskILI9488(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
+
+/* Hook prototypes */
+void vApplicationTickHook(void);
+
+/* USER CODE BEGIN 3 */
+void vApplicationTickHook( void )
+{
+	HAL_ADCEx_InjectedStart_IT(&hadc1);
+}
+
+void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	int16_t signal_r_abs, signal_l_abs;
+	ADC_Signals.last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
+	signal_r_abs = abs(ADC_Signals.last_right - ADC_Signals.avg_right);
+	if(signal_r_abs > ADC_Signals.max_right)
+		ADC_Signals.max_right = signal_r_abs;
+	ADC_Signals.last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
+	signal_l_abs = abs(ADC_Signals.last_left - ADC_Signals.avg_left);
+	if(signal_l_abs > ADC_Signals.max_left)
+		ADC_Signals.max_left = signal_l_abs;
+}
+
+/* USER CODE END 3 */
 
 /**
   * @brief  FreeRTOS initialization
@@ -118,6 +152,9 @@ void StartDefaultTask(void const * argument)
     
 
   /* USER CODE BEGIN StartDefaultTask */
+  const float adc_k = 0.001f;   // coef. IIR filter
+  float avg_left = 1UL << 11;
+  float avg_right = 1UL << 11;
   /* Infinite loop */
   for(;;)
   {
@@ -128,10 +165,21 @@ void StartDefaultTask(void const * argument)
 	TDA7439_EncoderRotate(EncoderRotate);
 	EncoderRotate = ENCODER_ROTATE_NO;
 	// ---
+	avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
+	ADC_Signals.avg_right = (int16_t)avg_right;
+	//float right_db = ADC_Signals.max_right
+	ADC_Signals.max_right = 0;
+	avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
+	ADC_Signals.avg_left = (int16_t)avg_left;
+	//float left_db = ADC_Signals.max_left
+	ADC_Signals.max_left = 0;
+	// ---
+	// TODO use right_db and left_db
+	// ---
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 	// ---
 	taskEXIT_CRITICAL();
-	osDelay(50);
+	osDelay(100);
   }
   /* USER CODE END StartDefaultTask */
 }
