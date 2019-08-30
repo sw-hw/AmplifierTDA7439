@@ -21,7 +21,7 @@
 #define TDA7439_TOP_OFFSET_THIRD_ROW		50
 #define TDA7439_TOP_OFFSET_FOURTH_ROW		70
 #define TDA7439_TOP_OFFSET_FIFTH_ROW		90
-#define	TDA7439_COLOR_LABELS				ILI9488_BLUE
+#define	TDA7439_COLOR_LABELS				ILI9488_WHITE
 #define	TDA7439_FONT_SIZE					1
 #define	TDA7439_LEFT_OFFSET_FIRST_VALS		140
 #define	TDA7439_LEFT_OFFSET_SECOND_VALS		373
@@ -31,6 +31,14 @@
 #define	TDA7439_MARK_UNSELECT_SIMBOL		' '
 #define	TDA7439_MARK_SELECTED_SIMBOL		'>'
 #define	TDA7439_COLOR_MARK					ILI9488_ORANGE
+#define	TDA7439_DIST_CEL					24
+#define	TDA7439_LEFT_OFFSET_CEL_MARK		10
+#define	TDA7439_TOP_OFFSET_FIRST_CEL		180
+#define	TDA7439_TOP_OFFSET_SECOND_CEL		250
+#define	TDA7439_TOP_OFFSET_MID_CEL			((TDA7439_TOP_OFFSET_FIRST_CEL + TDA7439_TOP_OFFSET_SECOND_CEL) >> 1)
+#define	TDA7439_LEFT_OFFSET_CEL				30
+#define	TDA7439_SIZE_CEL					20
+#define	TDA7439_MAX_NUM_CEL					16
 // ==============
 
 typedef enum {
@@ -55,7 +63,7 @@ typedef enum {
 // === Interface functions ===
 void TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
 void TDA7439_EncoderRotate(EncoderRotate_t rotate);
-void TDA7439_DisplaySignal(float left, float right);	// left and right signal in dB
+void TDA7439_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
 // =================
 
 // === macros for bass, mid, treble ===

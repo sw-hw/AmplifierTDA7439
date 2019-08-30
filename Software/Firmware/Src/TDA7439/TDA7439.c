@@ -64,7 +64,23 @@ static void TDA7439_DisplayInit(void)
 	ILI9488_Draw_Text("Treble:",	  TDA7439_LEFT_OFFSET_SECOND_COL, TDA7439_TOP_OFFSET_THIRD_ROW,  TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
 	ILI9488_Draw_Text("Balance:",	  TDA7439_LEFT_OFFSET_SECOND_COL, TDA7439_TOP_OFFSET_FOURTH_ROW, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
 	// ---
-	// TODO scale init (call TDA7439_DisplayRedrawScale in loop with params for set all segments in 0 state)
+	ILI9488_Draw_Text("L",	  		  TDA7439_LEFT_OFFSET_CEL_MARK,   				   TDA7439_TOP_OFFSET_FIRST_CEL + ((TDA7439_SIZE_CEL - 16) >> 1),
+			TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("dB",	  	  	  TDA7439_LEFT_OFFSET_CEL_MARK,  				   TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-30",	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 1,  TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-26", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 3,  TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-22", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 5,  TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-18", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 7,  TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-14", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 9,  TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-10", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 11, TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-4", 	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 13, TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("0", 	  	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 15, TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("2", 	  	  	  TDA7439_LEFT_OFFSET_CEL + TDA7439_DIST_CEL * 16, TDA7439_TOP_OFFSET_MID_CEL, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("R",	  		  TDA7439_LEFT_OFFSET_CEL_MARK,					   TDA7439_TOP_OFFSET_SECOND_CEL + ((TDA7439_SIZE_CEL - 16) >> 1),
+			TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
+	// ---
+	TDA7439_DisplayRedrawScale(0, 0, 1);
+	TDA7439_DisplayRedrawScale(0, 1, 1);
 }
 
 static void TDA7439_DisplayRedrawSelector(void)
@@ -186,7 +202,12 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 
 static void TDA7439_DisplayRedrawScale(uint8_t segment, uint8_t channel, uint8_t state)
 {
-	// TODO
+	// segment 0..16
+	const uint16_t left_offset = segment * TDA7439_DIST_CEL;
+	const uint16_t color	   = state ? (segment > 15 ? ILI9488_RED : (segment > 13 ? ILI9488_ORANGE : ILI9488_GREEN)) : TDA7439_COLOR_BACKGROUND;
+	const uint16_t top_offset  = channel ? TDA7439_TOP_OFFSET_FIRST_CEL : TDA7439_TOP_OFFSET_SECOND_CEL;
+	ILI9488_Draw_Filled_Rectangle_Coord(TDA7439_LEFT_OFFSET_CEL + left_offset, top_offset,  TDA7439_LEFT_OFFSET_CEL + left_offset + TDA7439_SIZE_CEL,
+			top_offset + TDA7439_SIZE_CEL, color);
 }
 
 // === Interface functions ===
@@ -349,7 +370,44 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 	}
 }
 
-void TDA7439_DisplaySignal(float left, float right)
+void TDA7439_DisplaySignal(int16_t left, int16_t right)
 {
-	// TODO
+	static uint16_t left_cur_segment = 0;
+	static uint16_t right_cur_segment = 0;
+	int16_t left_segment = (left + 32) / 2;
+	int16_t right_segment = (right + 32) / 2;
+	// ---
+	if(left_segment < 0)
+		left_segment = 0;
+	else if(left_segment > TDA7439_MAX_NUM_CEL)
+		left_segment = TDA7439_MAX_NUM_CEL;
+	// ---
+	if(left_segment > left_cur_segment)
+	{
+		left_cur_segment++;
+		TDA7439_DisplayRedrawScale(left_cur_segment, 0, 1);
+	}
+	else if(left_segment < left_cur_segment)
+	{
+		TDA7439_DisplayRedrawScale(left_cur_segment, 0, 0);
+		left_cur_segment--;
+	}
+	// ---
+	if(right_segment < 0)
+		right_segment = 0;
+	else if(right_segment > TDA7439_MAX_NUM_CEL)
+		right_segment = TDA7439_MAX_NUM_CEL;
+	// ---
+	if(right_segment > right_cur_segment)
+	{
+		right_cur_segment++;
+		TDA7439_DisplayRedrawScale(right_cur_segment, 1, 1);
+	}
+	else if(right_segment < right_cur_segment)
+	{
+		TDA7439_DisplayRedrawScale(right_cur_segment, 1, 0);
+		right_cur_segment--;
+	}
 }
+
+// TODO check channels (left, right)

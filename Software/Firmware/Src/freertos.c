@@ -40,9 +40,11 @@ typedef struct {
 	int16_t last_right;
 	int16_t avg_right;
 	int16_t max_right;
+	int16_t signal_right_db;
 	int16_t last_left;
 	int16_t avg_left;
 	int16_t max_left;
+	int16_t signal_left_db;
 } ADC_Signals_t;
 /* USER CODE END PTD */
 
@@ -169,11 +171,15 @@ void StartDefaultTask(void const * argument)
 	// ---
 	avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
 	ADC_Signals.avg_right = (int16_t)avg_right;
-	float right_db = -20 * log10(ref_adc / ADC_Signals.max_right);
+	if(ADC_Signals.max_right == 0)
+		ADC_Signals.max_right = 1;
+	ADC_Signals.signal_right_db = -(int16_t)(20 * log10(ref_adc / ADC_Signals.max_right) + 0.5);
 	ADC_Signals.max_right = 0;
+	if(ADC_Signals.max_left == 0)
+		ADC_Signals.max_left = 1;
 	avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
 	ADC_Signals.avg_left = (int16_t)avg_left;
-	float left_db = -20 * log10(ref_adc / ADC_Signals.max_left);
+	ADC_Signals.signal_left_db = -(int16_t)(20 * log10(ref_adc / ADC_Signals.max_left) + 0.5);
 	ADC_Signals.max_left = 0;
 	// ---
 	// TODO use right_db and left_db
@@ -199,8 +205,8 @@ void StartTaskILI9488(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  // TODO
-	  osDelay(100);
+	  TDA7439_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
+	  osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */
 }
