@@ -61,9 +61,10 @@ typedef enum {
 } t_TDA7439_Marker;
 
 // === Interface functions ===
-void TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
-void TDA7439_EncoderRotate(EncoderRotate_t rotate);
-void TDA7439_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
+void 	TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
+void 	TDA7439_EncoderRotate(EncoderRotate_t rotate);
+void 	TDA7439_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
+uint8_t	TDA7439_GetAmplifierState();						// 0 - OFF; 1 - ON
 // =================
 
 // === macros for bass, mid, treble ===

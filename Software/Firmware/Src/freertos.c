@@ -83,7 +83,8 @@ void vApplicationTickHook(void);
 /* USER CODE BEGIN 3 */
 void vApplicationTickHook( void )
 {
-	HAL_ADCEx_InjectedStart_IT(&hadc1);
+	if(TDA7439_GetAmplifierState())
+		HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
@@ -174,20 +175,21 @@ void StartDefaultTask(void const * argument)
 	TDA7439_EncoderRotate(EncoderRotate);
 	EncoderRotate = ENCODER_ROTATE_NO;
 	// ---
-	avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
-	ADC_Signals.avg_right = realToInt(avg_right);
-	if(ADC_Signals.max_right == 0)
-		ADC_Signals.max_right = 1;
-	ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_right));
-	ADC_Signals.max_right = 0;
-	if(ADC_Signals.max_left == 0)
-		ADC_Signals.max_left = 1;
-	avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
-	ADC_Signals.avg_left = realToInt(avg_left);
-	ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_left));
-	ADC_Signals.max_left = 0;
-	// ---
-	// TODO use right_db and left_db
+	if(TDA7439_GetAmplifierState())
+	{
+		avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
+		ADC_Signals.avg_right = realToInt(avg_right);
+		if(ADC_Signals.max_right == 0)
+			ADC_Signals.max_right = 1;
+		ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_right));
+		ADC_Signals.max_right = 0;
+		avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
+		ADC_Signals.avg_left = realToInt(avg_left);
+		if(ADC_Signals.max_left == 0)
+			ADC_Signals.max_left = 1;
+		ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_left));
+		ADC_Signals.max_left = 0;
+	}
 	// ---
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 	// ---

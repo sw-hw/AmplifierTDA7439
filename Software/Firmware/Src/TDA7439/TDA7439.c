@@ -4,6 +4,9 @@
 static uint8_t TDA7439_data[9];
 static t_TDA7439_Marker TDA7439_marker;
 
+static uint16_t left_cur_segment = 0;
+static uint16_t right_cur_segment = 0;
+
 static void TDA7439_I2C_Transmit(void);
 static void TDA7439_TurnOn(void);
 static void TDA7439_TurnOff(void);
@@ -79,6 +82,8 @@ static void TDA7439_DisplayInit(void)
 	ILI9488_Draw_Text("R",	  		  TDA7439_LEFT_OFFSET_CEL_MARK,					   TDA7439_TOP_OFFSET_SECOND_CEL + ((TDA7439_SIZE_CEL - 16) >> 1),
 			TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, TDA7439_COLOR_BACKGROUND);
 	// ---
+	left_cur_segment  = 0;
+	right_cur_segment = 0;
 	TDA7439_DisplayRedrawScale(0, 0, 1);
 	TDA7439_DisplayRedrawScale(0, 1, 1);
 }
@@ -372,10 +377,14 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 
 void TDA7439_DisplaySignal(int16_t left, int16_t right)
 {
-	static uint16_t left_cur_segment = 0;
-	static uint16_t right_cur_segment = 0;
-	int16_t left_segment = (left + 32) / 2;
-	int16_t right_segment = (right + 32) / 2;
+	int16_t left_segment;
+	int16_t right_segment;
+	// ---
+	if(!HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
+		return;
+	// ---
+	left_segment = (left + 32) / 2;
+	right_segment = (right + 32) / 2;
 	// ---
 	if(left_segment < 0)
 		left_segment = 0;
@@ -408,4 +417,9 @@ void TDA7439_DisplaySignal(int16_t left, int16_t right)
 		TDA7439_DisplayRedrawScale(right_cur_segment, 1, 0);
 		right_cur_segment--;
 	}
+}
+
+uint8_t	TDA7439_GetAmplifierState()
+{
+	return HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin);
 }
