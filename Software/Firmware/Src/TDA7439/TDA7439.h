@@ -38,7 +38,7 @@
 #define	TDA7439_TOP_OFFSET_MID_CEL			((TDA7439_TOP_OFFSET_FIRST_CEL + TDA7439_TOP_OFFSET_SECOND_CEL) >> 1)
 #define	TDA7439_LEFT_OFFSET_CEL				30
 #define	TDA7439_SIZE_CEL					20
-#define	TDA7439_MAX_NUM_CEL					16
+#define	TDA7439_MAX_NUM_CEL					17
 // ==============
 
 typedef enum {

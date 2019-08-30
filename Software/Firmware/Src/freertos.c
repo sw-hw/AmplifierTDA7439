@@ -55,7 +55,9 @@ typedef struct {
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define ADC_K_IIR			0.001f   // coef. IIR filters
+#define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
+#define	ADC_CONST_OFFSET	1988.0f	 // init value for IIR filters
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -156,15 +158,9 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-    
-    
-    
-
   /* USER CODE BEGIN StartDefaultTask */
-  const float adc_k      = 0.001f;   // coef. IIR filter
-  const float ref_adc    = 1500;	// reference value 0 dB
-  static float avg_left  = 1UL << 11;
-  static float avg_right = 1UL << 11;
+  static float avg_left  = ADC_CONST_OFFSET;
+  static float avg_right = ADC_CONST_OFFSET;
   /* Infinite loop */
   for(;;)
   {
@@ -177,17 +173,17 @@ void StartDefaultTask(void const * argument)
 	// ---
 	if(TDA7439_GetAmplifierState())
 	{
-		avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
+		avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
 		ADC_Signals.avg_right = realToInt(avg_right);
 		if(ADC_Signals.max_right == 0)
 			ADC_Signals.max_right = 1;
-		ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_right));
+		ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_right));
 		ADC_Signals.max_right = 0;
-		avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
+		avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
 		ADC_Signals.avg_left = realToInt(avg_left);
 		if(ADC_Signals.max_left == 0)
 			ADC_Signals.max_left = 1;
-		ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_left));
+		ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_left));
 		ADC_Signals.max_left = 0;
 	}
 	// ---
