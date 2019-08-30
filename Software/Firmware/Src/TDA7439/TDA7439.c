@@ -205,7 +205,7 @@ static void TDA7439_DisplayRedrawScale(uint8_t segment, uint8_t channel, uint8_t
 	// segment 0..16
 	const uint16_t left_offset = segment * TDA7439_DIST_CEL;
 	const uint16_t color	   = state ? (segment > 15 ? ILI9488_RED : (segment > 13 ? ILI9488_ORANGE : ILI9488_GREEN)) : TDA7439_COLOR_BACKGROUND;
-	const uint16_t top_offset  = channel ? TDA7439_TOP_OFFSET_FIRST_CEL : TDA7439_TOP_OFFSET_SECOND_CEL;
+	const uint16_t top_offset  = channel ? TDA7439_TOP_OFFSET_SECOND_CEL : TDA7439_TOP_OFFSET_FIRST_CEL;
 	ILI9488_Draw_Filled_Rectangle_Coord(TDA7439_LEFT_OFFSET_CEL + left_offset, top_offset,  TDA7439_LEFT_OFFSET_CEL + left_offset + TDA7439_SIZE_CEL,
 			top_offset + TDA7439_SIZE_CEL, color);
 }
@@ -409,5 +409,3 @@ void TDA7439_DisplaySignal(int16_t left, int16_t right)
 		right_cur_segment--;
 	}
 }
-
-// TODO check channels (left, right)

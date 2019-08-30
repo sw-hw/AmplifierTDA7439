@@ -68,7 +68,8 @@ osThreadId TaskILI9488Handle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-   
+int16_t realToInt(float value);
+
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
@@ -98,6 +99,10 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 		ADC_Signals.max_left = signal_l_abs;
 }
 
+int16_t realToInt(float value)
+{
+	return (int16_t)(value < 0 ? value - 0.5f : value + 0.5f);
+}
 /* USER CODE END 3 */
 
 /**
@@ -155,10 +160,10 @@ void StartDefaultTask(void const * argument)
     
 
   /* USER CODE BEGIN StartDefaultTask */
-  const float adc_k = 0.001f;   // coef. IIR filter
-  const float ref_adc = 1500;	// reference value 0 dB
-  float avg_left = 1UL << 11;
-  float avg_right = 1UL << 11;
+  const float adc_k      = 0.001f;   // coef. IIR filter
+  const float ref_adc    = 1500;	// reference value 0 dB
+  static float avg_left  = 1UL << 11;
+  static float avg_right = 1UL << 11;
   /* Infinite loop */
   for(;;)
   {
@@ -170,16 +175,16 @@ void StartDefaultTask(void const * argument)
 	EncoderRotate = ENCODER_ROTATE_NO;
 	// ---
 	avg_right = avg_right * (1.0f - adc_k) + ADC_Signals.last_right * adc_k;
-	ADC_Signals.avg_right = (int16_t)avg_right;
+	ADC_Signals.avg_right = realToInt(avg_right);
 	if(ADC_Signals.max_right == 0)
 		ADC_Signals.max_right = 1;
-	ADC_Signals.signal_right_db = -(int16_t)(20 * log10(ref_adc / ADC_Signals.max_right) + 0.5);
+	ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_right));
 	ADC_Signals.max_right = 0;
 	if(ADC_Signals.max_left == 0)
 		ADC_Signals.max_left = 1;
 	avg_left = avg_left * (1.0f - adc_k) + ADC_Signals.last_left * adc_k;
-	ADC_Signals.avg_left = (int16_t)avg_left;
-	ADC_Signals.signal_left_db = -(int16_t)(20 * log10(ref_adc / ADC_Signals.max_left) + 0.5);
+	ADC_Signals.avg_left = realToInt(avg_left);
+	ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ref_adc / ADC_Signals.max_left));
 	ADC_Signals.max_left = 0;
 	// ---
 	// TODO use right_db and left_db
@@ -187,7 +192,7 @@ void StartDefaultTask(void const * argument)
 	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 	// ---
 	taskEXIT_CRITICAL();
-	osDelay(100);
+	osDelay(50);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -205,7 +210,9 @@ void StartTaskILI9488(void const * argument)
   /* Infinite loop */
   for(;;)
   {
+	  taskENTER_CRITICAL();
 	  TDA7439_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
+	  taskEXIT_CRITICAL();
 	  osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */

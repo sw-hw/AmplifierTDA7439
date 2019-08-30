@@ -1,6 +1,6 @@
 #MicroXplorer Configuration settings - do not modify
 ADC1.Channel-1\#ChannelInjectedConversion=ADC_CHANNEL_0
-ADC1.Channel-2\#ChannelInjectedConversion=ADC_CHANNEL_0
+ADC1.Channel-2\#ChannelInjectedConversion=ADC_CHANNEL_1
 ADC1.EnableRegularConversion=DISABLE
 ADC1.IPParameters=master,Rank-1\#ChannelInjectedConversion,Channel-1\#ChannelInjectedConversion,SamplingTime-1\#ChannelInjectedConversion,InjectedOffset-1\#ChannelInjectedConversion,Rank-2\#ChannelInjectedConversion,Channel-2\#ChannelInjectedConversion,SamplingTime-2\#ChannelInjectedConversion,InjectedOffset-2\#ChannelInjectedConversion,InjNumberOfConversion,EnableRegularConversion
 ADC1.InjNumberOfConversion=2
@@ -8,8 +8,8 @@ ADC1.InjectedOffset-1\#ChannelInjectedConversion=0
 ADC1.InjectedOffset-2\#ChannelInjectedConversion=0
 ADC1.Rank-1\#ChannelInjectedConversion=1
 ADC1.Rank-2\#ChannelInjectedConversion=2
-ADC1.SamplingTime-1\#ChannelInjectedConversion=ADC_SAMPLETIME_1CYCLE_5
-ADC1.SamplingTime-2\#ChannelInjectedConversion=ADC_SAMPLETIME_1CYCLE_5
+ADC1.SamplingTime-1\#ChannelInjectedConversion=ADC_SAMPLETIME_239CYCLES_5
+ADC1.SamplingTime-2\#ChannelInjectedConversion=ADC_SAMPLETIME_239CYCLES_5
 ADC1.master=1
 FREERTOS.FootprintOK=true
 FREERTOS.INCLUDE_vTaskDelete=0
