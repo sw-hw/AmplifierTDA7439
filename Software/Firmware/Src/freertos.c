@@ -71,6 +71,7 @@ osThreadId TaskILI9488Handle;
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 int16_t realToInt(float value);
+int16_t dBtoInt(float value);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -106,6 +107,16 @@ int16_t realToInt(float value)
 {
 	return (int16_t)(value < 0 ? value - 0.5f : value + 0.5f);
 }
+
+int16_t dBtoInt(float value)
+{
+    int16_t out = (int16_t)value;
+    if(value < 0.0f)
+        return out - 1;
+    else
+        return out;
+}
+
 /* USER CODE END 3 */
 
 /**
@@ -177,13 +188,13 @@ void StartDefaultTask(void const * argument)
 		ADC_Signals.avg_right = realToInt(avg_right);
 		if(ADC_Signals.max_right == 0)
 			ADC_Signals.max_right = 1;
-		ADC_Signals.signal_right_db = realToInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_right));
+		ADC_Signals.signal_right_db = dBtoInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_right));
 		ADC_Signals.max_right = 0;
 		avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
 		ADC_Signals.avg_left = realToInt(avg_left);
 		if(ADC_Signals.max_left == 0)
 			ADC_Signals.max_left = 1;
-		ADC_Signals.signal_left_db = realToInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_left));
+		ADC_Signals.signal_left_db = dBtoInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_left));
 		ADC_Signals.max_left = 0;
 	}
 	// ---
