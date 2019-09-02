@@ -67,16 +67,18 @@ __IO ADC_Signals_t ADC_Signals;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId TaskILI9488Handle;
+osThreadId TaskVUHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
 int16_t realToInt(float value);
-int16_t dBtoInt(float value);
+int16_t ConvertTo_dB(int16_t value);
 
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
 void StartTaskILI9488(void const * argument);
+void StartTaskVU(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -108,13 +110,16 @@ int16_t realToInt(float value)
 	return (int16_t)(value < 0 ? value - 0.5f : value + 0.5f);
 }
 
-int16_t dBtoInt(float value)
+int16_t ConvertTo_dB(int16_t value)
 {
-    int16_t out = (int16_t)value;
-    if(value < 0.0f)
-        return out - 1;
+	float res;
+	if(value == 0)
+		value = 1;
+    res = -20.0f * (float)log10(ADC_REF_0DB / value);
+    if(res < 0.0f)
+        return ((int16_t)res) - 1;
     else
-        return out;
+        return (int16_t)res;
 }
 
 /* USER CODE END 3 */
@@ -154,6 +159,10 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(TaskILI9488, StartTaskILI9488, osPriorityLow, 0, 128);
   TaskILI9488Handle = osThreadCreate(osThread(TaskILI9488), NULL);
 
+  /* definition and creation of TaskVU */
+  osThreadDef(TaskVU, StartTaskVU, osPriorityNormal, 0, 128);
+  TaskVUHandle = osThreadCreate(osThread(TaskVU), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -169,9 +178,13 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
+    
+    
+    
+    
+
   /* USER CODE BEGIN StartDefaultTask */
-  static float avg_left  = ADC_CONST_OFFSET;
-  static float avg_right = ADC_CONST_OFFSET;
+
   /* Infinite loop */
   for(;;)
   {
@@ -182,23 +195,7 @@ void StartDefaultTask(void const * argument)
 	TDA7439_EncoderRotate(EncoderRotate);
 	EncoderRotate = ENCODER_ROTATE_NO;
 	// ---
-	if(TDA7439_GetAmplifierState())
-	{
-		avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
-		ADC_Signals.avg_right = realToInt(avg_right);
-		if(ADC_Signals.max_right == 0)
-			ADC_Signals.max_right = 1;
-		ADC_Signals.signal_right_db = dBtoInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_right));
-		ADC_Signals.max_right = 0;
-		avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
-		ADC_Signals.avg_left = realToInt(avg_left);
-		if(ADC_Signals.max_left == 0)
-			ADC_Signals.max_left = 1;
-		ADC_Signals.signal_left_db = dBtoInt(-20.0f * (float)log10(ADC_REF_0DB / ADC_Signals.max_left));
-		ADC_Signals.max_left = 0;
-	}
-	// ---
-	HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
+	//HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
 	// ---
 	taskEXIT_CRITICAL();
 	osDelay(50);
@@ -225,6 +222,39 @@ void StartTaskILI9488(void const * argument)
 	  osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */
+}
+
+/* USER CODE BEGIN Header_StartTaskVU */
+/**
+* @brief Function implementing the TaskVU thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTaskVU */
+void StartTaskVU(void const * argument)
+{
+  /* USER CODE BEGIN StartTaskVU */
+  float avg_left  = ADC_CONST_OFFSET;
+  float avg_right = ADC_CONST_OFFSET;
+  /* Infinite loop */
+  for(;;)
+  {
+	  taskENTER_CRITICAL();
+	  if(TDA7439_GetAmplifierState())
+	  {
+		  avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
+		  ADC_Signals.avg_right = realToInt(avg_right);
+		  ADC_Signals.signal_right_db = ConvertTo_dB(ADC_Signals.max_right);
+		  ADC_Signals.max_right = 0;
+		  avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
+		  ADC_Signals.avg_left = realToInt(avg_left);
+		  ADC_Signals.signal_left_db = ConvertTo_dB(ADC_Signals.max_left);
+		  ADC_Signals.max_left = 0;
+	  }
+	  taskEXIT_CRITICAL();
+	  osDelay(100);
+  }
+  /* USER CODE END StartTaskVU */
 }
 
 /* Private application code --------------------------------------------------*/
