@@ -89,6 +89,7 @@ void vApplicationTickHook(void);
 /* USER CODE BEGIN 3 */
 void vApplicationTickHook( void )
 {
+	// TODO ADC need to be calibrated!!!
 	if(TDA7439_GetAmplifierState())
 		HAL_ADCEx_InjectedStart_IT(&hadc1);
 }

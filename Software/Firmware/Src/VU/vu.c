@@ -2,8 +2,8 @@
 
 static __IO VU_mode_t VU_mode;
 
-static __IO uint16_t left_cur_segment_led = 0;
-static __IO uint16_t right_cur_segment_led = 0;
+static __IO int16_t left_cur_segment_led;
+static __IO int16_t right_cur_segment_led;
 
 static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state);
 static void	VU_EraseScale(void);
@@ -103,10 +103,8 @@ void	VU_SetMode(VU_mode_t mode)
 			ILI9488_Draw_Text("R",	  		  VU_LEFT_OFFSET_LED_LABEL,					  VU_TOP_OFFSET_SECOND_LED + ((VU_SIZE_LED - 16) >> 1),
 					VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 			// ---
-			left_cur_segment_led  = 0;
-			right_cur_segment_led = 0;
-			VU_RedrawScaleLed(0, 0, 1);
-			VU_RedrawScaleLed(0, 1, 1);
+			left_cur_segment_led  = -1;
+			right_cur_segment_led = -1;
 			break;
 		case VU_MODE_ARROW:
 			VU_EraseScale();
