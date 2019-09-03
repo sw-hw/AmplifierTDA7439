@@ -27,6 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */     
 #include "TDA7439/TDA7439.h"
+#include "VU/vu.h"
 #include "ILI9488/ILI9488_STM32_Driver.h"
 #include "ILI9488/ILI9488_GFX.h"
 #include "adc.h"
@@ -217,7 +218,7 @@ void StartTaskILI9488(void const * argument)
   for(;;)
   {
 	  taskENTER_CRITICAL();
-	  TDA7439_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
+	  VU_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
 	  taskEXIT_CRITICAL();
 	  osDelay(1);
   }

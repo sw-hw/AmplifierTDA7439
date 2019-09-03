@@ -13,7 +13,6 @@
 #define TDA7439_TIME_TURN_ON				1000UL
 #define TDA7439_TIME_TURN_OFF				2000UL
 // ---
-#define TDA7439_COLOR_BACKGROUND			ILI9488_BLACK
 #define TDA7439_LEFT_OFFSET_FIRST_COL		30
 #define TDA7439_LEFT_OFFSET_SECOND_COL		300
 #define TDA7439_TOP_OFFSET_FIRST_ROW		10
@@ -31,14 +30,6 @@
 #define	TDA7439_MARK_UNSELECT_SIMBOL		' '
 #define	TDA7439_MARK_SELECTED_SIMBOL		'>'
 #define	TDA7439_COLOR_MARK					ILI9488_ORANGE
-#define	TDA7439_DIST_CEL					24
-#define	TDA7439_LEFT_OFFSET_CEL_MARK		10
-#define	TDA7439_TOP_OFFSET_FIRST_CEL		180
-#define	TDA7439_TOP_OFFSET_SECOND_CEL		250
-#define	TDA7439_TOP_OFFSET_MID_CEL			((TDA7439_TOP_OFFSET_FIRST_CEL + TDA7439_TOP_OFFSET_SECOND_CEL) >> 1)
-#define	TDA7439_LEFT_OFFSET_CEL				30
-#define	TDA7439_SIZE_CEL					20
-#define	TDA7439_MAX_NUM_CEL					17
 // ==============
 
 typedef enum {
@@ -57,13 +48,13 @@ typedef enum {
 	TDA7439_MARKER_MID,
 	TDA7439_MARKER_TREBLE,
 	TDA7439_MARKER_BALANCE,
+	TDA7439_MARKER_VU,
 	TDA7439_MARKER_enumMAX
 } t_TDA7439_Marker;
 
 // === Interface functions ===
 void 	TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
 void 	TDA7439_EncoderRotate(EncoderRotate_t rotate);
-void 	TDA7439_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
 uint8_t	TDA7439_GetAmplifierState();						// 0 - OFF; 1 - ON
 // =================
 
