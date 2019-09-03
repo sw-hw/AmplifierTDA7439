@@ -14,8 +14,19 @@
 #define	VU_MAX_NUM_LED						17
 #define	VU_COLOR_LABELS						ILI9488_WHITE
 #define	VU_FONT_SIZE						1
+#define	VU_X0_COORD_ERASE					0
+#define	VU_Y0_COORD_ERASE					(ILI9488_SCREEN_HEIGHT >> 1)
+#define	VU_X1_COORD_ERASE					(ILI9488_SCREEN_WIDTH - 1)
+#define	VU_Y1_COORD_ERASE					(ILI9488_SCREEN_HEIGHT - 1)
 
-void	VU_Init(void);
-void 	VU_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
+typedef enum {
+	VU_MODE_LED = 0,
+	VU_MODE_ARROW
+} VU_mode_t;
+
+void		VU_Init(void);
+void		VU_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
+void		VU_SetMode(VU_mode_t mode);
+VU_mode_t	VU_GetMode(void);
 
 #endif /* VU_VU_H_ */

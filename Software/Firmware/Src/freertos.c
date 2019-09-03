@@ -218,7 +218,8 @@ void StartTaskILI9488(void const * argument)
   for(;;)
   {
 	  taskENTER_CRITICAL();
-	  VU_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
+	  if(TDA7439_GetAmplifierState())
+		  VU_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
 	  taskEXIT_CRITICAL();
 	  osDelay(1);
   }

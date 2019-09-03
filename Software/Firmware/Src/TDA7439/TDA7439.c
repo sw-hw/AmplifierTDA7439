@@ -180,10 +180,19 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 					ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				}
 				else
-					ILI9488_Draw_Text("equal   ", TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, ILI9488_GREEN, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+					ILI9488_Draw_Text("==      ", TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, ILI9488_GREEN, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				break;
 			case TDA7439_MARKER_VU:
-				// TODO
+				switch(VU_GetMode())
+				{
+					case VU_MODE_LED:
+						sprintf(str, "led  ");
+						break;
+					case VU_MODE_ARROW:
+						sprintf(str, "arrow");
+						break;
+				}
+				ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FIFTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				break;
 			case TDA7439_MARKER_enumMAX:
 				break;
@@ -343,7 +352,16 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 			}
 			break;
 		case TDA7439_MARKER_VU:
-			// TODO
+			if(rotate == ENCODER_ROTATE_R)
+			{
+				if(VU_GetMode() != VU_MODE_ARROW)
+					VU_SetMode(VU_MODE_ARROW);
+			}
+			else if(rotate == ENCODER_ROTATE_L)
+			{
+				if(VU_GetMode() != VU_MODE_LED)
+					VU_SetMode(VU_MODE_LED);
+			}
 			break;
 		case TDA7439_MARKER_enumMAX:
 			break;
