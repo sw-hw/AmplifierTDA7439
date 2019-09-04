@@ -255,7 +255,7 @@ void StartTaskVU(void const * argument)
 		  ADC_Signals.max_left = 0;
 	  }
 	  taskEXIT_CRITICAL();
-	  osDelay(100);
+	  osDelay(30);
   }
   /* USER CODE END StartTaskVU */
 }

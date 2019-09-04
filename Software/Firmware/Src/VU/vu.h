@@ -18,10 +18,12 @@
 #define	VU_Y0_COORD_ERASE					(ILI9488_SCREEN_HEIGHT >> 1)
 #define	VU_X1_COORD_ERASE					(ILI9488_SCREEN_WIDTH - 1)
 #define	VU_Y1_COORD_ERASE					(ILI9488_SCREEN_HEIGHT - 1)
+#define VU_PEAK_TIME						1000UL
+#define VU_STEP_TIME						100UL
 
 typedef enum {
-	VU_MODE_LED = 0,
-	VU_MODE_ARROW
+	VU_MODE_COLUMN = 0,
+	VU_MODE_COLUMN_AND_PEAK
 } VU_mode_t;
 
 void		VU_Init(void);

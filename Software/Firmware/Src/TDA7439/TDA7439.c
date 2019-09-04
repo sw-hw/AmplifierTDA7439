@@ -119,7 +119,7 @@ static void TDA7439_DisplayRedrawSelector(void)
 
 static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 {
-	char str[10];
+	char str[15];
 	int8_t val;
 	t_TDA7439_Marker marker;
 	if(draw_all)
@@ -185,11 +185,11 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 			case TDA7439_MARKER_VU:
 				switch(VU_GetMode())
 				{
-					case VU_MODE_LED:
-						sprintf(str, "led  ");
+					case VU_MODE_COLUMN:
+						sprintf(str, "column    ");
 						break;
-					case VU_MODE_ARROW:
-						sprintf(str, "arrow");
+					case VU_MODE_COLUMN_AND_PEAK:
+						sprintf(str, "col & peak");
 						break;
 				}
 				ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FIFTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
@@ -354,13 +354,13 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 		case TDA7439_MARKER_VU:
 			if(rotate == ENCODER_ROTATE_R)
 			{
-				if(VU_GetMode() != VU_MODE_ARROW)
-					VU_SetMode(VU_MODE_ARROW);
+				if(VU_GetMode() != VU_MODE_COLUMN_AND_PEAK)
+					VU_SetMode(VU_MODE_COLUMN_AND_PEAK);
 			}
 			else if(rotate == ENCODER_ROTATE_L)
 			{
-				if(VU_GetMode() != VU_MODE_LED)
-					VU_SetMode(VU_MODE_LED);
+				if(VU_GetMode() != VU_MODE_COLUMN)
+					VU_SetMode(VU_MODE_COLUMN);
 			}
 			break;
 		case TDA7439_MARKER_enumMAX:
