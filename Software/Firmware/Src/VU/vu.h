@@ -22,7 +22,7 @@
 #define VU_STEP_TIME						100UL
 
 typedef enum {
-	VU_MODE_COLUMN = 0,
+	VU_MODE_COLUMN_ONLY = 0,
 	VU_MODE_COLUMN_AND_PEAK
 } VU_mode_t;
 

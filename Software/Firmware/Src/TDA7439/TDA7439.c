@@ -185,7 +185,7 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 			case TDA7439_MARKER_VU:
 				switch(VU_GetMode())
 				{
-					case VU_MODE_COLUMN:
+					case VU_MODE_COLUMN_ONLY:
 						sprintf(str, "column    ");
 						break;
 					case VU_MODE_COLUMN_AND_PEAK:
@@ -359,8 +359,8 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 			}
 			else if(rotate == ENCODER_ROTATE_L)
 			{
-				if(VU_GetMode() != VU_MODE_COLUMN)
-					VU_SetMode(VU_MODE_COLUMN);
+				if(VU_GetMode() != VU_MODE_COLUMN_ONLY)
+					VU_SetMode(VU_MODE_COLUMN_ONLY);
 			}
 			break;
 		case TDA7439_MARKER_enumMAX:

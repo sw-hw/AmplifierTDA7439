@@ -32,7 +32,7 @@ static void	VU_EraseScale(void)
 
 void	VU_Init(void)
 {
-	VU_SetMode(VU_MODE_COLUMN); // Set default mode
+	VU_SetMode(VU_MODE_COLUMN_ONLY); // Set default mode
 }
 
 void	VU_DisplaySignal(int16_t left, int16_t right)
@@ -57,7 +57,7 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 			case VU_MODE_COLUMN_AND_PEAK:
 				if(left_cur_segment_led == left_peak_segment_led)
 					break;
-			case VU_MODE_COLUMN:
+			case VU_MODE_COLUMN_ONLY:
 				VU_RedrawScaleLed(left_cur_segment_led, 0, 0);
 				break;
 		}
@@ -81,7 +81,7 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 			case VU_MODE_COLUMN_AND_PEAK:
 				if(right_cur_segment_led == right_peak_segment_led)
 					break;
-			case VU_MODE_COLUMN:
+			case VU_MODE_COLUMN_ONLY:
 				VU_RedrawScaleLed(right_cur_segment_led, 1, 0);
 				break;
 		}
@@ -119,7 +119,7 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 					VU_RedrawScaleLed(right_peak_segment_led, 1, 1);
 			}
 			break;
-		case VU_MODE_COLUMN:
+		case VU_MODE_COLUMN_ONLY:
 			break;
 	}
 }
