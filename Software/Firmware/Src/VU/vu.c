@@ -22,13 +22,12 @@ static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state)
 	const uint16_t left_offset = segment * VU_DIST_LED;
 	const uint16_t color	   = state ? (segment > 15 ? ILI9488_RED : (segment > 13 ? ILI9488_ORANGE : ILI9488_GREEN)) : ILI9488_COLOR_BACKGROUND;
 	const uint16_t top_offset  = channel ? VU_TOP_OFFSET_SECOND_LED : VU_TOP_OFFSET_FIRST_LED;
-	ILI9488_Draw_Filled_Rectangle_Coord(VU_LEFT_OFFSET_LED + left_offset, top_offset,  VU_LEFT_OFFSET_LED + left_offset + VU_SIZE_LED,
-			top_offset + VU_SIZE_LED, color);
+	ILI9488_Draw_Rectangle(VU_LEFT_OFFSET_LED + left_offset, top_offset, VU_SIZE_LED, VU_SIZE_LED, color);
 }
 
 static void	VU_EraseScale(void)
 {
-	ILI9488_Draw_Filled_Rectangle_Coord(VU_X0_COORD_ERASE, VU_Y0_COORD_ERASE, VU_X1_COORD_ERASE, VU_Y1_COORD_ERASE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Rectangle(VU_X0_COORD_ERASE, VU_Y0_COORD_ERASE, VU_WIDTH_ERASE, VU_HEIGHT_ERASE, ILI9488_COLOR_BACKGROUND);
 }
 
 static void	VU_ApplyMode()
@@ -171,17 +170,15 @@ VU_mode_t	VU_GetMode(void)
 void		VU_NextMode(void)
 {
 	if(VU_mode == (VU_MODE_enumMAX - 1))
-		;//VU_mode = 0;
-	else
-		VU_mode++;
+		return;
+	VU_mode++;
 	VU_ApplyMode();
 }
 
 void		VU_PrevMode(void)
 {
 	if(VU_mode == 0)
-		;//VU_mode = (VU_MODE_enumMAX - 1);
-	else
-		VU_mode--;
+		return;
+	VU_mode--;
 	VU_ApplyMode();
 }

@@ -4,8 +4,8 @@
 #include "gpio.h"
 
 /* Global Variables ------------------------------------------------------------------*/
-volatile uint16_t LCD_HEIGHT = ILI9488_SCREEN_HEIGHT;
-volatile uint16_t LCD_WIDTH	 = ILI9488_SCREEN_WIDTH;
+__IO uint16_t LCD_HEIGHT = ILI9488_SCREEN_HEIGHT;
+__IO uint16_t LCD_WIDTH	 = ILI9488_SCREEN_WIDTH;
 
 /*Send data (char) to LCD*/
 void ILI9488_SPI_Send(uint8_t SPI_Data)
@@ -208,7 +208,6 @@ void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 	data[0] = (((Colour & 0xF800) >> 11) * 255) / 31; // r
 	data[1] = (((Colour & 0x07E0) >> 5) * 255) / 63;  // g
 	data[2] = ((Colour & 0x001F) * 255) / 31;		  // b
-	// TODO Всё равно выходит довольно тухлая скорость отрисовки, надо бы смотреть в сторону 3 битных цветов...
 	for(; Size; Size--)
 		for(uint8_t i = 0; i < 3;)
 			if(__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
