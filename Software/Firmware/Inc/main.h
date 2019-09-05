@@ -69,6 +69,8 @@ void Error_Handler(void);
 #define RELAY_GPIO_Port GPIOB
 #define LED_BLUE_Pin GPIO_PIN_2
 #define LED_BLUE_GPIO_Port GPIOB
+#define OPTO_Pin GPIO_PIN_12
+#define OPTO_GPIO_Port GPIOB
 #define POW_HEAD_Pin GPIO_PIN_8
 #define POW_HEAD_GPIO_Port GPIOA
 #define DISPLAY_CS_Pin GPIO_PIN_3

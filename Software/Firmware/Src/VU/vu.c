@@ -171,7 +171,7 @@ VU_mode_t	VU_GetMode(void)
 void		VU_NextMode(void)
 {
 	if(VU_mode == (VU_MODE_enumMAX - 1))
-		VU_mode = 0;
+		;//VU_mode = 0;
 	else
 		VU_mode++;
 	VU_ApplyMode();
@@ -180,7 +180,7 @@ void		VU_NextMode(void)
 void		VU_PrevMode(void)
 {
 	if(VU_mode == 0)
-		VU_mode = (VU_MODE_enumMAX - 1);
+		;//VU_mode = (VU_MODE_enumMAX - 1);
 	else
 		VU_mode--;
 	VU_ApplyMode();
