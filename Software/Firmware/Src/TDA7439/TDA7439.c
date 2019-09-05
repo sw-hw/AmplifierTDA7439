@@ -186,10 +186,12 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 				switch(VU_GetMode())
 				{
 					case VU_MODE_COLUMN_ONLY:
-						sprintf(str, "column    ");
+						sprintf(str, "col only  ");
 						break;
 					case VU_MODE_COLUMN_AND_PEAK:
 						sprintf(str, "col & peak");
+						break;
+					case VU_MODE_enumMAX:
 						break;
 				}
 				ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FIFTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
@@ -353,15 +355,9 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 			break;
 		case TDA7439_MARKER_VU:
 			if(rotate == ENCODER_ROTATE_R)
-			{
-				if(VU_GetMode() != VU_MODE_COLUMN_AND_PEAK)
-					VU_SetMode(VU_MODE_COLUMN_AND_PEAK);
-			}
+				VU_NextMode();
 			else if(rotate == ENCODER_ROTATE_L)
-			{
-				if(VU_GetMode() != VU_MODE_COLUMN_ONLY)
-					VU_SetMode(VU_MODE_COLUMN_ONLY);
-			}
+				VU_PrevMode();
 			break;
 		case TDA7439_MARKER_enumMAX:
 			break;

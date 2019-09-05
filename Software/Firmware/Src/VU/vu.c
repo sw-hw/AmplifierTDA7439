@@ -12,6 +12,7 @@ static __IO int16_t	right_peak_segment_led;
 
 static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state);
 static void	VU_EraseScale(void);
+static void	VU_ApplyMode();
 
 // ===
 
@@ -30,9 +31,41 @@ static void	VU_EraseScale(void)
 	ILI9488_Draw_Filled_Rectangle_Coord(VU_X0_COORD_ERASE, VU_Y0_COORD_ERASE, VU_X1_COORD_ERASE, VU_Y1_COORD_ERASE, ILI9488_COLOR_BACKGROUND);
 }
 
+static void	VU_ApplyMode()
+{
+	VU_EraseScale();
+	// ---
+	ILI9488_Draw_Text("L",	  		  VU_LEFT_OFFSET_LED_LABEL,   				  VU_TOP_OFFSET_FIRST_LED + ((VU_SIZE_LED - 16) >> 1),
+			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("dB",	  	  	  VU_LEFT_OFFSET_LED_LABEL,  				  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-45",	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 1,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-39", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 3,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-33", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 5,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-27", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 7,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-21", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 9,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-15", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 11, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-9", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 13, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-6", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 14, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("-3", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 15, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text(" 0", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 16, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("+3", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 17, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	ILI9488_Draw_Text("R",	  		  VU_LEFT_OFFSET_LED_LABEL,					  VU_TOP_OFFSET_SECOND_LED + ((VU_SIZE_LED - 16) >> 1),
+			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+	// ---
+	left_cur_segment_led  = -1;
+	right_cur_segment_led = -1;
+	left_peak_time_led = ~ 0UL;
+	right_peak_time_led = ~ 0UL;
+	left_peak_segment_led = -1;
+	right_peak_segment_led = -1;
+}
+
+// ===
+
 void	VU_Init(void)
 {
-	VU_SetMode(VU_MODE_COLUMN_ONLY); // Set default mode
+	VU_mode = VU_MODE_COLUMN_ONLY; // Set default mode
+	VU_ApplyMode();
 }
 
 void	VU_DisplaySignal(int16_t left, int16_t right)
@@ -60,6 +93,8 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 			case VU_MODE_COLUMN_ONLY:
 				VU_RedrawScaleLed(left_cur_segment_led, 0, 0);
 				break;
+			case VU_MODE_enumMAX:
+				break;
 		}
 		left_cur_segment_led--;
 	}
@@ -84,12 +119,16 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 			case VU_MODE_COLUMN_ONLY:
 				VU_RedrawScaleLed(right_cur_segment_led, 1, 0);
 				break;
+			case VU_MODE_enumMAX:
+				break;
 		}
 		right_cur_segment_led--;
 	}
 	// ---
 	switch(VU_mode)
 	{
+		case VU_MODE_COLUMN_ONLY:
+			break;
 		case VU_MODE_COLUMN_AND_PEAK:
 			if(left_segment >= left_peak_segment_led)
 			{
@@ -119,43 +158,30 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 					VU_RedrawScaleLed(right_peak_segment_led, 1, 1);
 			}
 			break;
-		case VU_MODE_COLUMN_ONLY:
+		case VU_MODE_enumMAX:
 			break;
 	}
-}
-
-void	VU_SetMode(VU_mode_t mode)
-{
-	VU_mode = mode;
-	// ===
-	VU_EraseScale();
-	// ---
-	ILI9488_Draw_Text("L",	  		  VU_LEFT_OFFSET_LED_LABEL,   				  VU_TOP_OFFSET_FIRST_LED + ((VU_SIZE_LED - 16) >> 1),
-			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("dB",	  	  	  VU_LEFT_OFFSET_LED_LABEL,  				  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-45",	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 1,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-39", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 3,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-33", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 5,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-27", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 7,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-21", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 9,  VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-15", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 11, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-9", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 13, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-6", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 14, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("-3", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 15, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text(" 0", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 16, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("+3", 	  	  VU_LEFT_OFFSET_LED + VU_DIST_LED * 17, VU_TOP_OFFSET_MID_LED, VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	ILI9488_Draw_Text("R",	  		  VU_LEFT_OFFSET_LED_LABEL,					  VU_TOP_OFFSET_SECOND_LED + ((VU_SIZE_LED - 16) >> 1),
-			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-	// ---
-	left_cur_segment_led  = -1;
-	right_cur_segment_led = -1;
-	left_peak_time_led = ~ 0UL;
-	right_peak_time_led = ~ 0UL;
-	left_peak_segment_led = -1;
-	right_peak_segment_led = -1;
 }
 
 VU_mode_t	VU_GetMode(void)
 {
 	return VU_mode;
+}
+
+void		VU_NextMode(void)
+{
+	if(VU_mode == (VU_MODE_enumMAX - 1))
+		VU_mode = 0;
+	else
+		VU_mode++;
+	VU_ApplyMode();
+}
+
+void		VU_PrevMode(void)
+{
+	if(VU_mode == 0)
+		VU_mode = (VU_MODE_enumMAX - 1);
+	else
+		VU_mode--;
+	VU_ApplyMode();
 }

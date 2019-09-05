@@ -23,12 +23,14 @@
 
 typedef enum {
 	VU_MODE_COLUMN_ONLY = 0,
-	VU_MODE_COLUMN_AND_PEAK
+	VU_MODE_COLUMN_AND_PEAK,
+	VU_MODE_enumMAX
 } VU_mode_t;
 
 void		VU_Init(void);
 void		VU_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
-void		VU_SetMode(VU_mode_t mode);
 VU_mode_t	VU_GetMode(void);
+void		VU_NextMode(void);
+void		VU_PrevMode(void);
 
 #endif /* VU_VU_H_ */
