@@ -130,12 +130,12 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 		case VU_MODE_COLUMN_ONLY:
 			break;
 		case VU_MODE_COLUMN_AND_PEAK:
-			if(left_segment >= left_peak_segment_led)
+			if(left_cur_segment_led >= left_peak_segment_led)
 			{
-				left_peak_segment_led = left_segment;
+				left_peak_segment_led = left_cur_segment_led;
 				left_peak_time_led = HAL_GetTick() + VU_PEAK_TIME;
 			}
-			else if(left_peak_segment_led > left_cur_segment_led && HAL_GetTick() > left_peak_time_led)
+			else if(HAL_GetTick() > left_peak_time_led)
 			{
 				left_peak_time_led = HAL_GetTick() + VU_STEP_TIME;
 				VU_RedrawScaleLed(left_peak_segment_led, 0, 0);
@@ -144,12 +144,12 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 					VU_RedrawScaleLed(left_peak_segment_led, 0, 1);
 			}
 			// ---
-			if(right_segment >= right_peak_segment_led)
+			if(right_cur_segment_led >= right_peak_segment_led)
 			{
-				right_peak_segment_led = right_segment;
+				right_peak_segment_led = right_cur_segment_led;
 				right_peak_time_led = HAL_GetTick() + VU_PEAK_TIME;
 			}
-			else if(right_peak_segment_led > right_cur_segment_led && HAL_GetTick() > right_peak_time_led)
+			else if(HAL_GetTick() > right_peak_time_led)
 			{
 				right_peak_time_led = HAL_GetTick() + VU_STEP_TIME;
 				VU_RedrawScaleLed(right_peak_segment_led, 1, 0);
