@@ -73,7 +73,7 @@ static void TDA7439_DisplayRedrawSelector(void)
 	switch(TDA7439_marker)
 	{
 		case TDA7439_MARKER_HEAD:
-			ILI9488_Draw_Char(TDA7439_MARK_UNSELECT_SIMBOL, TDA7439_LEFT_OFFSET_SECOND_MARK, TDA7439_TOP_OFFSET_FIFTH_ROW, TDA7439_COLOR_MARK, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+			ILI9488_Draw_Char(TDA7439_MARK_UNSELECT_SIMBOL, TDA7439_LEFT_OFFSET_SECOND_MARK, TDA7439_TOP_OFFSET_FIFTH_ROW,  TDA7439_COLOR_MARK, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 			ILI9488_Draw_Char(TDA7439_MARK_SELECTED_SIMBOL, TDA7439_LEFT_OFFSET_FIRST_MARK,  TDA7439_TOP_OFFSET_FIRST_ROW,  TDA7439_COLOR_MARK, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 			break;
 		case TDA7439_MARKER_POW_AMP:
@@ -171,18 +171,16 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 				break;
 			case TDA7439_MARKER_BALANCE:
 				val = (int8_t)TDA7439_data[7] - (int8_t)TDA7439_data[8];
-				if(val < 0)
-				{
-					sprintf(str, "L %d dB ", val);
-					ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-				}
-				else if(val > 0)
-				{
-					sprintf(str, "R %d dB ", -val);
-					ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
-				}
+				if(val == 0)
+					ILI9488_Draw_Text("==      ", TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				else
-					ILI9488_Draw_Text("==      ", TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, ILI9488_GREEN, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+				{
+					if(val < 0)
+						sprintf(str, "L %d dB ", val);
+					else
+						sprintf(str, "R %d dB ", -val);
+					ILI9488_Draw_Text(str, TDA7439_LEFT_OFFSET_SECOND_VALS, TDA7439_TOP_OFFSET_FOURTH_ROW, ILI9488_RED, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
+				}
 				break;
 			case TDA7439_MARKER_VU:
 				switch(VU_GetMode())
@@ -345,17 +343,17 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 		case TDA7439_MARKER_BALANCE:
 			if(rotate == ENCODER_ROTATE_R)
 			{
-				if(TDA7439_data[8] > TDA7439_data[7])
-					TDA7439_data[8]--;
-				else if(TDA7439_data[7] != 72) // if first speaker is not equals -72 dB
-					TDA7439_data[7]++;
+				if(TDA7439_data[7] > TDA7439_data[8])
+					TDA7439_data[7]--;
+				else if(TDA7439_data[8] != 72) // if speaker is not equals -72 dB
+					TDA7439_data[8]++;
 			}
 			else if(rotate == ENCODER_ROTATE_L)
 			{
-				if(TDA7439_data[7] > TDA7439_data[8])
-					TDA7439_data[7]--;
-				else if(TDA7439_data[8] != 72) // if second speaker is not equals -72 dB
-					TDA7439_data[8]++;
+				if(TDA7439_data[8] > TDA7439_data[7])
+					TDA7439_data[8]--;
+				else if(TDA7439_data[7] != 72) // if speaker is not equals -72 dB
+					TDA7439_data[7]++;
 			}
 			break;
 		case TDA7439_MARKER_VU:
