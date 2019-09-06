@@ -56,9 +56,9 @@ typedef struct {
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define ADC_K_IIR			0.001f   // coef. IIR filters
+#define ADC_K_IIR			0.0001f   // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	1988.0f	 // init value for IIR filters
+#define	ADC_CONST_OFFSET	2047.0f	 // init value for IIR filters
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -89,7 +89,6 @@ void vApplicationTickHook(void);
 /* USER CODE BEGIN 3 */
 void vApplicationTickHook( void )
 {
-	// TODO ADC need to be calibrated!!!
 	if(TDA7439_GetAmplifierState())
 		HAL_ADCEx_InjectedStart_IT(&hadc1);
 }
@@ -197,8 +196,6 @@ void StartDefaultTask(void const * argument)
 	TDA7439_EncoderRotate(EncoderRotate);
 	EncoderRotate = ENCODER_ROTATE_NO;
 	// ---
-	//HAL_GPIO_TogglePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin);
-	// ---
 	taskEXIT_CRITICAL();
 	osDelay(50);
   }
@@ -222,7 +219,7 @@ void StartTaskILI9488(void const * argument)
 	  if(TDA7439_GetAmplifierState())
 		  VU_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
 	  taskEXIT_CRITICAL();
-	  osDelay(1);
+	  //osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */
 }

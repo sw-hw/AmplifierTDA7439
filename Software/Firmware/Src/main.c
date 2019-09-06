@@ -98,7 +98,9 @@ int main(void)
   MX_SPI2_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_Delay(1000);
+  HAL_ADCEx_Calibration_Start(&hadc1);
+  HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */
