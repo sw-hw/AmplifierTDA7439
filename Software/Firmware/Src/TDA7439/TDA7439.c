@@ -20,8 +20,6 @@ static void TDA7439_I2C_Transmit(void)
 static void TDA7439_TurnOn(void)
 {
 	TDA7439_marker = TDA7439_MARKER_HEAD;
-	HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(OPTO_GPIO_Port, OPTO_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
 	HAL_Delay(1000);
 	TDA7439_data[0] = 0x10; 		// start sub-address and auto increment mode
@@ -43,10 +41,10 @@ static void TDA7439_TurnOn(void)
 
 static void TDA7439_TurnOff(void)
 {
+	ILI9488_LedDisable();
 	HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(OPTO_GPIO_Port, OPTO_Pin, GPIO_PIN_RESET);
-	ILI9488_LedDisable();
-	ILI9488_TurnOff();
+	ILI9488_TurnOff(); // Call this function gives some delay and this is good
 	HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
 }
 
