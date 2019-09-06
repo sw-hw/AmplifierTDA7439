@@ -12,7 +12,7 @@ static __IO int16_t	right_peak_segment_led;
 
 static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state);
 static void	VU_EraseScale(void);
-static void	VU_ApplyMode();
+static void	VU_ApplyMode(void);
 
 // ===
 
@@ -30,7 +30,7 @@ static void	VU_EraseScale(void)
 	ILI9488_Draw_Rectangle(VU_X0_COORD_ERASE, VU_Y0_COORD_ERASE, VU_WIDTH_ERASE, VU_HEIGHT_ERASE, ILI9488_COLOR_BACKGROUND);
 }
 
-static void	VU_ApplyMode()
+static void	VU_ApplyMode(void)
 {
 	VU_EraseScale();
 	// ---
