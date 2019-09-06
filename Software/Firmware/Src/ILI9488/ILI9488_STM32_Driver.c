@@ -96,12 +96,11 @@ void ILI9488_LedDisable(void)
 	HAL_GPIO_WritePin(LCD_LED_PORT, LCD_LED_PIN, GPIO_PIN_RESET);
 }
 
-
-/* https://github.com/jaretburkett/ILI9488
- * TODO should use more correct settings
- * */
-void init_ILI9488(void)
+/*Initialize and turn On the LCD display*/
+void ILI9488_Init(void)
 {
+	ILI9488_Write_Command(0x01); // Soft Reset
+	// Most of commands from https://github.com/jaretburkett/ILI9488
 	ILI9488_Write_Command(0xE0);
 	ILI9488_Write_Data(0x00);
 	ILI9488_Write_Data(0x03);
@@ -180,14 +179,17 @@ void init_ILI9488(void)
 	ILI9488_Write_Command(0x11);    //Exit Sleep
 	HAL_Delay(120);
 	ILI9488_Write_Command(0x29);    //Display on
-}
-
-/*Initialize LCD display*/
-void ILI9488_Init(void)
-{
-	init_ILI9488();
 	HAL_Delay(500);
 	ILI9488_Set_Rotation(SCREEN_HORIZONTAL_1);
+}
+
+/*Turn Off and enter to sleep mode the display*/
+void ILI9488_TurnOff(void)
+{
+	ILI9488_Write_Command(0x28); // Display OFF
+	HAL_Delay(120);
+	ILI9488_Write_Command(0x10); // Sleep IN
+	HAL_Delay(500);
 }
 
 //FILL THE ENTIRE SCREEN WITH SELECTED COLOUR

@@ -21,6 +21,7 @@ static void TDA7439_TurnOn(void)
 {
 	TDA7439_marker = TDA7439_MARKER_HEAD;
 	HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(OPTO_GPIO_Port, OPTO_Pin, GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
 	HAL_Delay(1000);
 	TDA7439_data[0] = 0x10; 		// start sub-address and auto increment mode
@@ -37,13 +38,15 @@ static void TDA7439_TurnOn(void)
 	TDA7439_DisplayInit();
 	TDA7439_DisplayRedrawVal(1);
 	TDA7439_DisplayRedrawSelector();
+	ILI9488_LedEnable();
 }
 
 static void TDA7439_TurnOff(void)
 {
-	ILI9488_LedDisable();
-	// TODO turn OFF mode ILI9488
 	HAL_GPIO_WritePin(POW_HEAD_GPIO_Port, POW_HEAD_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(OPTO_GPIO_Port, OPTO_Pin, GPIO_PIN_RESET);
+	ILI9488_LedDisable();
+	ILI9488_TurnOff();
 	HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_RESET);
 }
 
@@ -51,7 +54,6 @@ static void TDA7439_DisplayInit(void)
 {
 	ILI9488_Init(); //initial driver setup to drive ili9488
 	ILI9488_Fill_Screen(ILI9488_COLOR_BACKGROUND);
-	ILI9488_LedEnable();
 	// ===
 	ILI9488_Draw_Text("Headphone:",	  TDA7439_LEFT_OFFSET_FIRST_COL,  TDA7439_TOP_OFFSET_FIRST_ROW,  TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 	ILI9488_Draw_Text("Power amp:",	  TDA7439_LEFT_OFFSET_FIRST_COL,  TDA7439_TOP_OFFSET_SECOND_ROW, TDA7439_COLOR_LABELS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);

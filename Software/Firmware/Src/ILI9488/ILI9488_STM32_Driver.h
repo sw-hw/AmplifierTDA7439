@@ -60,6 +60,7 @@ void ILI9488_Set_Rotation(uint8_t Rotation);
 void ILI9488_LedEnable(void);
 void ILI9488_LedDisable(void);
 void ILI9488_Init(void);
+void ILI9488_TurnOff(void);
 void ILI9488_Fill_Screen(uint16_t Colour);
 void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint16_t Colour);
 void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size);
