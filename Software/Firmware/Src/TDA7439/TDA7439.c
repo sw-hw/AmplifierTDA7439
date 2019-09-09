@@ -207,13 +207,15 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 
 void TDA7439_EncoderButton(uint8_t state)
 {
-	static uint32_t last_time = ~ 0UL;
+	static uint32_t last_time = 0;
+	static uint8_t enable = 0;
 	if(HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
 	{
 		static uint8_t short_push = 0;
 		if(state)
 		{
 			last_time = HAL_GetTick();
+			enable = 1;
 			if(short_push)
 			{
 				short_push = 0;
@@ -224,13 +226,13 @@ void TDA7439_EncoderButton(uint8_t state)
 				TDA7439_DisplayRedrawSelector();
 			}
 		}
-		else if(last_time != (~ 0UL))
+		else if(enable)
 		{
 			if(HAL_GetTick() - last_time > TDA7439_TIME_TURN_OFF)
 			{
 				TDA7439_TurnOff();
-				last_time = ~ 0UL;
 				short_push = 0;
+				enable = 0;
 			}
 			else
 				short_push = 1;
@@ -239,11 +241,14 @@ void TDA7439_EncoderButton(uint8_t state)
 	else
 	{
 		if(state)
+		{
 			last_time = HAL_GetTick();
-		else if(last_time != (~ 0UL) && HAL_GetTick() - last_time > TDA7439_TIME_TURN_ON)
+			enable = 1;
+		}
+		else if(enable && HAL_GetTick() - last_time > TDA7439_TIME_TURN_ON)
 		{
 			TDA7439_TurnOn();
-			last_time = ~ 0UL;
+			enable = 0;
 		}
 	}
 }
