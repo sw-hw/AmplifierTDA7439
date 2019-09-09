@@ -95,6 +95,7 @@ void vApplicationTickHook( void )
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
+	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
 	int16_t signal_r_abs, signal_l_abs;
 	ADC_Signals.last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
 	signal_r_abs = abs(ADC_Signals.last_right - ADC_Signals.avg_right);
@@ -104,6 +105,7 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 	signal_l_abs = abs(ADC_Signals.last_left - ADC_Signals.avg_left);
 	if(signal_l_abs > ADC_Signals.max_left)
 		ADC_Signals.max_left = signal_l_abs;
+	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 
 int16_t realToInt(float value)
