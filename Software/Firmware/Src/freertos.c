@@ -56,9 +56,10 @@ typedef struct {
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define ADC_K_IIR			0.0001f   // coef. IIR filters
+#define ADC_K_IIR			0.0001f  // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
 #define	ADC_CONST_OFFSET	2047.0f	 // init value for IIR filters
+#define	VU_DIVIDER			30
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -68,7 +69,6 @@ __IO ADC_Signals_t ADC_Signals;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId TaskILI9488Handle;
-osThreadId TaskVUHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -79,7 +79,6 @@ int16_t ConvertTo_dB(int16_t value);
 
 void StartDefaultTask(void const * argument);
 void StartTaskILI9488(void const * argument);
-void StartTaskVU(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -95,16 +94,34 @@ void vApplicationTickHook( void )
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+	// TODO try to use rings
+	static float avg_left  = ADC_CONST_OFFSET;
+	static float avg_right = ADC_CONST_OFFSET;
+	static uint16_t vu_counter = 0;
 	int16_t signal_r_abs, signal_l_abs;
-	ADC_Signals.last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
-	signal_r_abs = abs(ADC_Signals.last_right - ADC_Signals.avg_right);
-	if(signal_r_abs > ADC_Signals.max_right)
-		ADC_Signals.max_right = signal_r_abs;
-	ADC_Signals.last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
+	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+	ADC_Signals.last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
 	signal_l_abs = abs(ADC_Signals.last_left - ADC_Signals.avg_left);
 	if(signal_l_abs > ADC_Signals.max_left)
 		ADC_Signals.max_left = signal_l_abs;
+	ADC_Signals.last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
+	signal_r_abs = abs(ADC_Signals.last_right - ADC_Signals.avg_right);
+	if(signal_r_abs > ADC_Signals.max_right)
+		ADC_Signals.max_right = signal_r_abs;
+	// ---
+	vu_counter++;
+	if(vu_counter == VU_DIVIDER)
+	{
+		vu_counter = 0;
+		avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
+		ADC_Signals.avg_left = realToInt(avg_left);
+		ADC_Signals.signal_left_db = ConvertTo_dB(ADC_Signals.max_left);
+		ADC_Signals.max_left = 0;
+		avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
+		ADC_Signals.avg_right = realToInt(avg_right);
+		ADC_Signals.signal_right_db = ConvertTo_dB(ADC_Signals.max_right);
+		ADC_Signals.max_right = 0;
+	}
 	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 
@@ -162,10 +179,6 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(TaskILI9488, StartTaskILI9488, osPriorityLow, 0, 128);
   TaskILI9488Handle = osThreadCreate(osThread(TaskILI9488), NULL);
 
-  /* definition and creation of TaskVU */
-  osThreadDef(TaskVU, StartTaskVU, osPriorityNormal, 0, 128);
-  TaskVUHandle = osThreadCreate(osThread(TaskVU), NULL);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -181,7 +194,6 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-    
     
     
     
@@ -224,39 +236,6 @@ void StartTaskILI9488(void const * argument)
 	  //osDelay(1);
   }
   /* USER CODE END StartTaskILI9488 */
-}
-
-/* USER CODE BEGIN Header_StartTaskVU */
-/**
-* @brief Function implementing the TaskVU thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartTaskVU */
-void StartTaskVU(void const * argument)
-{
-  /* USER CODE BEGIN StartTaskVU */
-  float avg_left  = ADC_CONST_OFFSET;
-  float avg_right = ADC_CONST_OFFSET;
-  /* Infinite loop */
-  for(;;)
-  {
-	  taskENTER_CRITICAL();
-	  if(TDA7439_GetAmplifierState())
-	  {
-		  avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
-		  ADC_Signals.avg_right = realToInt(avg_right);
-		  ADC_Signals.signal_right_db = ConvertTo_dB(ADC_Signals.max_right);
-		  ADC_Signals.max_right = 0;
-		  avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
-		  ADC_Signals.avg_left = realToInt(avg_left);
-		  ADC_Signals.signal_left_db = ConvertTo_dB(ADC_Signals.max_left);
-		  ADC_Signals.max_left = 0;
-	  }
-	  taskEXIT_CRITICAL();
-	  osDelay(30);
-  }
-  /* USER CODE END StartTaskVU */
 }
 
 /* Private application code --------------------------------------------------*/
