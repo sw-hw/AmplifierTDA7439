@@ -53,8 +53,6 @@ static void	VU_ApplyMode(void)
 	// ---
 	left_cur_segment_led  = -1;
 	right_cur_segment_led = -1;
-	left_peak_time_led = ~ 0UL;
-	right_peak_time_led = ~ 0UL;
 	left_peak_segment_led = -1;
 	right_peak_segment_led = -1;
 }
@@ -129,14 +127,21 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 		case VU_MODE_COLUMN_ONLY:
 			break;
 		case VU_MODE_COLUMN_AND_PEAK:
+		{
+			static uint8_t left_peak_time = 0;
+			static uint8_t right_peak_time = 0;
+			// ---
 			if(left_cur_segment_led >= left_peak_segment_led)
 			{
 				left_peak_segment_led = left_cur_segment_led;
-				left_peak_time_led = HAL_GetTick() + VU_PEAK_TIME;
+				left_peak_time_led = HAL_GetTick();
+				left_peak_time = 1;
 			}
-			else if(HAL_GetTick() > left_peak_time_led)
+			else if((left_peak_time && HAL_GetTick() - left_peak_time_led > VU_PEAK_TIME)
+					|| (!left_peak_time && HAL_GetTick() - left_peak_time_led > VU_STEP_TIME))
 			{
-				left_peak_time_led = HAL_GetTick() + VU_STEP_TIME;
+				left_peak_time_led = HAL_GetTick();
+				left_peak_time = 0;
 				VU_RedrawScaleLed(left_peak_segment_led, 0, 0);
 				left_peak_segment_led--;
 				if(left_cur_segment_led != left_peak_segment_led)
@@ -146,17 +151,21 @@ void	VU_DisplaySignal(int16_t left, int16_t right)
 			if(right_cur_segment_led >= right_peak_segment_led)
 			{
 				right_peak_segment_led = right_cur_segment_led;
-				right_peak_time_led = HAL_GetTick() + VU_PEAK_TIME;
+				right_peak_time_led = HAL_GetTick();
+				right_peak_time = 1;
 			}
-			else if(HAL_GetTick() > right_peak_time_led)
+			else if((right_peak_time && HAL_GetTick() - right_peak_time_led > VU_PEAK_TIME)
+					|| (!right_peak_time && HAL_GetTick() - right_peak_time_led > VU_STEP_TIME))
 			{
-				right_peak_time_led = HAL_GetTick() + VU_STEP_TIME;
+				right_peak_time_led = HAL_GetTick();
+				right_peak_time = 0;
 				VU_RedrawScaleLed(right_peak_segment_led, 1, 0);
 				right_peak_segment_led--;
 				if(right_cur_segment_led != right_peak_segment_led)
 					VU_RedrawScaleLed(right_peak_segment_led, 1, 1);
 			}
 			break;
+		}
 		case VU_MODE_enumMAX:
 			break;
 	}
