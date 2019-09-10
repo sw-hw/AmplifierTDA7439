@@ -37,16 +37,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct {
-	int16_t last_right;
-	int16_t avg_right;
-	int16_t max_right;
-	int16_t signal_right_db;
-	int16_t last_left;
-	int16_t avg_left;
-	int16_t max_left;
-	int16_t signal_left_db;
-} ADC_Signals_t;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -58,7 +49,7 @@ typedef struct {
 /* USER CODE BEGIN PM */
 #define ADC_K_IIR			0.0001f  // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	2047.0f	 // init value for IIR filters
+#define	ADC_CONST_OFFSET	2047	 // init value for IIR filters
 #define	VU_DIVIDER			30
 /* USER CODE END PM */
 
@@ -92,35 +83,45 @@ void vApplicationTickHook( void )
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	// TODO try to use rings
-	static float avg_left  = ADC_CONST_OFFSET;
-	static float avg_right = ADC_CONST_OFFSET;
+	static float avg_left_f  = ADC_CONST_OFFSET;
+	static float avg_right_f = ADC_CONST_OFFSET;
+	static int16_t avg_left  = ADC_CONST_OFFSET;
+	static int16_t avg_right = ADC_CONST_OFFSET;
 	static uint16_t vu_counter = 0;
-	static ADC_Signals_t ADC_Signals;
-	int16_t signal_r_abs, signal_l_abs;
+	static int16_t max_signal_left = 0;
+	static int16_t max_signal_right = 0;
+	static int16_t signal_left_db = 0x8000;
+	static int16_t signal_right_db = 0x8000;
+	int16_t signal_l_abs, signal_r_abs;
+	int16_t last_left, last_right;
 	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-	ADC_Signals.last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
-	signal_l_abs = abs(ADC_Signals.last_left - ADC_Signals.avg_left);
-	if(signal_l_abs > ADC_Signals.max_left)
-		ADC_Signals.max_left = signal_l_abs;
-	ADC_Signals.last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
-	signal_r_abs = abs(ADC_Signals.last_right - ADC_Signals.avg_right);
-	if(signal_r_abs > ADC_Signals.max_right)
-		ADC_Signals.max_right = signal_r_abs;
+	// ===
+	last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
+	signal_l_abs = abs(last_left - avg_left);
+	if(signal_l_abs > max_signal_left)
+		max_signal_left = signal_l_abs;
+	// ---
+	last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
+	signal_r_abs = abs(last_right - avg_right);
+	if(signal_r_abs > max_signal_right)
+		max_signal_right = signal_r_abs;
 	// ---
 	vu_counter++;
 	if(vu_counter == VU_DIVIDER)
 	{
 		vu_counter = 0;
-		avg_left = avg_left * (1.0f - ADC_K_IIR) + ADC_Signals.last_left * ADC_K_IIR;
-		ADC_Signals.avg_left = realToInt(avg_left);
-		ADC_Signals.signal_left_db = ConvertTo_dB(ADC_Signals.max_left);
-		ADC_Signals.max_left = 0;
-		avg_right = avg_right * (1.0f - ADC_K_IIR) + ADC_Signals.last_right * ADC_K_IIR;
-		ADC_Signals.avg_right = realToInt(avg_right);
-		ADC_Signals.signal_right_db = ConvertTo_dB(ADC_Signals.max_right);
-		ADC_Signals.max_right = 0;
+		// ===
+		avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
+		avg_left = realToInt(avg_left_f);
+		signal_left_db = ConvertTo_dB(max_signal_left);
+		max_signal_left = 0;
+		// ---
+		avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
+		avg_right = realToInt(avg_right_f);
+		signal_right_db = ConvertTo_dB(max_signal_right);
+		max_signal_right = 0;
 	}
-	VU_DisplaySignal(ADC_Signals.signal_left_db, ADC_Signals.signal_right_db);
+	VU_DisplaySignal(signal_left_db, signal_right_db);
 	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 
