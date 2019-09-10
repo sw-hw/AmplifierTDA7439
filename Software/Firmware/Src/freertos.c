@@ -49,15 +49,18 @@
 /* USER CODE BEGIN PM */
 #define ADC_K_IIR			0.0001f  // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	2047	 // init value for IIR filters
-#define	VU_DIVIDER			30
+#define	ADC_CONST_OFFSET	2047.0f	 // init value for IIR filters
+#define	VU_RING_LEN			30		 // length of rings ADC data (sampling frequency = 1 KHz)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 __IO EncoderRotate_t EncoderRotate = ENCODER_ROTATE_NO;
+__IO int16_t VU_left_db  = 0x8000;
+__IO int16_t VU_right_db = 0x8000;
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
+osThreadId TaskVUHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
@@ -67,6 +70,7 @@ int16_t ConvertTo_dB(int16_t value);
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void const * argument);
+void StartTaskVU(void const * argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -82,46 +86,32 @@ void vApplicationTickHook( void )
 
 void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	// TODO try to use rings
 	static float avg_left_f  = ADC_CONST_OFFSET;
 	static float avg_right_f = ADC_CONST_OFFSET;
-	static int16_t avg_left  = ADC_CONST_OFFSET;
-	static int16_t avg_right = ADC_CONST_OFFSET;
+	static int16_t L[VU_RING_LEN];
+	static int16_t R[VU_RING_LEN];
 	static uint16_t vu_counter = 0;
-	static int16_t max_signal_left = 0;
-	static int16_t max_signal_right = 0;
-	static int16_t signal_left_db = 0x8000;
-	static int16_t signal_right_db = 0x8000;
-	int16_t signal_l_abs, signal_r_abs;
-	int16_t last_left, last_right;
+	int16_t last_left = 0, last_right = 0, l_max = 0, r_max = 0;
 	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
 	// ===
 	last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
-	signal_l_abs = abs(last_left - avg_left);
-	if(signal_l_abs > max_signal_left)
-		max_signal_left = signal_l_abs;
-	// ---
+	L[vu_counter] = abs(last_left - (int16_t)avg_left_f);
+	avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
 	last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
-	signal_r_abs = abs(last_right - avg_right);
-	if(signal_r_abs > max_signal_right)
-		max_signal_right = signal_r_abs;
-	// ---
+	R[vu_counter] = abs(last_right - (int16_t)avg_right_f);
+	avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
 	vu_counter++;
-	if(vu_counter == VU_DIVIDER)
-	{
+	if(vu_counter == VU_RING_LEN)
 		vu_counter = 0;
-		// ===
-		avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
-		avg_left = realToInt(avg_left_f);
-		signal_left_db = ConvertTo_dB(max_signal_left);
-		max_signal_left = 0;
-		// ---
-		avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
-		avg_right = realToInt(avg_right_f);
-		signal_right_db = ConvertTo_dB(max_signal_right);
-		max_signal_right = 0;
+	for(uint16_t i = 0; i < VU_RING_LEN; i++)
+	{
+		if(L[i] > l_max)
+			l_max = L[i];
+		if(R[i] > r_max)
+			r_max = R[i];
 	}
-	VU_DisplaySignal(signal_left_db, signal_right_db);
+	VU_left_db  = ConvertTo_dB(l_max);
+	VU_right_db = ConvertTo_dB(r_max);
 	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 
@@ -175,6 +165,10 @@ void MX_FREERTOS_Init(void) {
   osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
+  /* definition and creation of TaskVU */
+  osThreadDef(TaskVU, StartTaskVU, osPriorityLow, 0, 128);
+  TaskVUHandle = osThreadCreate(osThread(TaskVU), NULL);
+
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -190,6 +184,7 @@ void MX_FREERTOS_Init(void) {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
+    
     
     
 
@@ -209,6 +204,27 @@ void StartDefaultTask(void const * argument)
 	osDelay(50);
   }
   /* USER CODE END StartDefaultTask */
+}
+
+/* USER CODE BEGIN Header_StartTaskVU */
+/**
+* @brief Function implementing the TaskVU thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartTaskVU */
+void StartTaskVU(void const * argument)
+{
+  /* USER CODE BEGIN StartTaskVU */
+  /* Infinite loop */
+  for(;;)
+  {
+	  taskENTER_CRITICAL();
+	  if(TDA7439_GetAmplifierState())
+		  VU_DisplaySignal(VU_left_db, VU_right_db);
+	  taskEXIT_CRITICAL();
+  }
+  /* USER CODE END StartTaskVU */
 }
 
 /* Private application code --------------------------------------------------*/
