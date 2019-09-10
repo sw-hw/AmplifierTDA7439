@@ -88,8 +88,8 @@ void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	static float avg_left_f  = ADC_CONST_OFFSET;
 	static float avg_right_f = ADC_CONST_OFFSET;
-	static int16_t L[VU_RING_LEN];
-	static int16_t R[VU_RING_LEN];
+	static int16_t L[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
+	static int16_t R[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
 	static uint16_t vu_counter = 0;
 	int16_t last_left = 0, last_right = 0, l_max = 0, r_max = 0;
 	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
