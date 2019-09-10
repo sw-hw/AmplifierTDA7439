@@ -156,8 +156,9 @@ void ILI9488_Init(void)
 	ILI9488_Write_Command(0XB0);      // Interface Mode Control
 	ILI9488_Write_Data(0x80);     			 //SDO NOT USE
 
-	ILI9488_Write_Command(0xB1);      //Frame rate
-	ILI9488_Write_Data(0xA0);    //60Hz
+	ILI9488_Write_Command(0xB1);    // Frame rate
+	ILI9488_Write_Data(0xC0);       // 78Hz
+	ILI9488_Write_Data(0x11);		// 17 clocks
 
 	ILI9488_Write_Command(0xB4);      //Display Inversion Control
 	ILI9488_Write_Data(0x02);    //2-dot
