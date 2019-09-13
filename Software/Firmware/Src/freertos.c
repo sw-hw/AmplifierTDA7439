@@ -81,38 +81,44 @@ void vApplicationTickHook(void);
 void vApplicationTickHook( void )
 {
 	if(TDA7439_GetAmplifierState())
-		HAL_ADCEx_InjectedStart_IT(&hadc1);
-}
-
-void HAL_ADCEx_InjectedConvCpltCallback(ADC_HandleTypeDef* hadc)
-{
-	static float avg_left_f  = ADC_CONST_OFFSET;
-	static float avg_right_f = ADC_CONST_OFFSET;
-	static int16_t L[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
-	static int16_t R[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
-	static uint16_t vu_counter = 0;
-	int16_t last_left = 0, last_right = 0, l_max = 0, r_max = 0;
-	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-	// ===
-	last_left = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_1);
-	L[vu_counter] = abs(last_left - (int16_t)avg_left_f);
-	avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
-	last_right = (int16_t)HAL_ADCEx_InjectedGetValue(hadc, ADC_INJECTED_RANK_2);
-	R[vu_counter] = abs(last_right - (int16_t)avg_right_f);
-	avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
-	vu_counter++;
-	if(vu_counter == VU_RING_LEN)
-		vu_counter = 0;
-	for(uint16_t i = 0; i < VU_RING_LEN; i++)
 	{
-		if(L[i] > l_max)
-			l_max = L[i];
-		if(R[i] > r_max)
-			r_max = R[i];
+		/*
+		 * Иногда проскакивают значения АЦП около 6-7 единиц, при чем проскакивают даже при запитке только от USB отладчика.
+		 * Перепробовал уже разные режимы работы АЦП, а также пробовал отключать внешние устройства для разгрузки шины GND,
+		 * но ничего не помогает. Возможно причина в браке МК. Нужно таки попробовать впихнуть сюда какой-нибудь F303
+		 */
+		static float avg_left_f  = ADC_CONST_OFFSET;
+		static float avg_right_f = ADC_CONST_OFFSET;
+		static int16_t L[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
+		static int16_t R[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
+		static uint16_t vu_counter = 0;
+		int16_t last_left = 0, last_right = 0, l_max = 0, r_max = 0;
+		// ---
+		last_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+		last_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+		// ---
+		L[vu_counter] = abs(last_left - realToInt(avg_left_f));
+		avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
+		R[vu_counter] = abs(last_right - realToInt(avg_right_f));
+		avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
+		vu_counter++;
+		if(vu_counter == VU_RING_LEN)
+			vu_counter = 0;
+		for(uint16_t i = 0; i < VU_RING_LEN; i++)
+		{
+			if(L[i] > l_max)
+				l_max = L[i];
+			if(R[i] > r_max)
+				r_max = R[i];
+		}
+		VU_left_db  = ConvertTo_dB(l_max);
+		VU_right_db = ConvertTo_dB(r_max);
+		/* TODO
+		 * if VU_left_db > 0 or VU_right_db > 0 duration > 3000 ms, turn OFF power amplifier for 5000ms
+		 * */
+		// ===
+		HAL_ADCEx_InjectedStart(&hadc1);
 	}
-	VU_left_db  = ConvertTo_dB(l_max);
-	VU_right_db = ConvertTo_dB(r_max);
-	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 
 int16_t realToInt(float value)

@@ -29,8 +29,8 @@ static void TDA7439_TurnOn(void)
 	TDA7439_data[4] = 0b1101; 		// bass (0b0000 to 0b0111 to 0b1000)
 	TDA7439_data[5] = 0b0000; 		// mid-range (0b0000 to 0b0111 to 0b1000)
 	TDA7439_data[6] = 0b1000; 		// treble (0b0000 to 0b01111 to 0b1000)
-	TDA7439_data[7] = 30;			// first speaker attenuation
-	TDA7439_data[8] = 30;			// second speaker attenuation
+	TDA7439_data[7] = 72;			// first speaker attenuation
+	TDA7439_data[8] = 72;			// second speaker attenuation
 	TDA7439_I2C_Transmit();
 	// ---
 	TDA7439_DisplayInit();
