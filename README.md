@@ -1,6 +1,6 @@
 # AmplifierTDA7439
 
-## Hi-Fi preamplifier based on audio processor TDA7439 and ARM microcontroller STM32F103C8 ([Scheme](https://easyeda.com/Electrician/amplifiertda7439))
+## Hi-Fi preamplifier based on audio processor TDA7439 and ARM microcontroller STM32F303CC ([Scheme](https://easyeda.com/Electrician/amplifiertda7439))
 
 ### Top side PCB
 ![Top PCB](https://user-images.githubusercontent.com/42692616/65148793-89af6b80-da29-11e9-8a91-323eb2e883ef.png)
