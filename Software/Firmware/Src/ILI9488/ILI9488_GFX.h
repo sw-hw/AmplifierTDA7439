@@ -1,7 +1,7 @@
 #ifndef ILI9488_GFX_H
 #define ILI9488_GFX_H
 
-#include "stm32f1xx_hal.h"
+#include "stm32f3xx_hal.h"
 
 void ILI9488_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour);
 void ILI9488_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour);

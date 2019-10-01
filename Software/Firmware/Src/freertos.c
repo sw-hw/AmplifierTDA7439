@@ -49,7 +49,7 @@
 /* USER CODE BEGIN PM */
 #define ADC_K_IIR			0.0001f  // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	2047.0f	 // init value for IIR filters
+#define	ADC_CONST_OFFSET	2043.0f	 // init value for IIR filters
 #define	VU_RING_LEN			30		 // length of rings ADC data (sampling frequency = 1 KHz)
 /* USER CODE END PM */
 
@@ -82,11 +82,6 @@ void vApplicationTickHook( void )
 {
 	if(TDA7439_GetAmplifierState())
 	{
-		/*
-		 * Иногда проскакивают значения АЦП около 6-7 единиц, при чем проскакивают даже при запитке только от USB отладчика.
-		 * Перепробовал уже разные режимы работы АЦП, а также пробовал отключать внешние устройства для разгрузки шины GND,
-		 * но ничего не помогает. Возможно причина в браке МК. Нужно таки попробовать впихнуть сюда какой-нибудь F303
-		 */
 		static float avg_left_f  = ADC_CONST_OFFSET;
 		static float avg_right_f = ADC_CONST_OFFSET;
 		static int16_t L[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
@@ -195,19 +190,18 @@ void StartDefaultTask(void const * argument)
     
 
   /* USER CODE BEGIN StartDefaultTask */
-
   /* Infinite loop */
   for(;;)
   {
-	taskENTER_CRITICAL();
-	// ---
-	TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
-	// ---
-	TDA7439_EncoderRotate(EncoderRotate);
-	EncoderRotate = ENCODER_ROTATE_NO;
-	// ---
-	taskEXIT_CRITICAL();
-	osDelay(50);
+	  taskENTER_CRITICAL();
+	  // ---
+	  TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
+	  // ---
+	  TDA7439_EncoderRotate(EncoderRotate);
+	  EncoderRotate = ENCODER_ROTATE_NO;
+	  // ---
+	  taskEXIT_CRITICAL();
+	  osDelay(50);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -237,10 +231,10 @@ void StartTaskVU(void const * argument)
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-  UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-  if(GPIO_Pin == ENCODER_C_Pin)
-	  EncoderRotate = (HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin) == GPIO_PIN_SET) ? ENCODER_ROTATE_R : ENCODER_ROTATE_L;
-  taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
+	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
+	if(GPIO_Pin == ENCODER_C_Pin)
+		EncoderRotate = (HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin) == GPIO_PIN_SET) ? ENCODER_ROTATE_R : ENCODER_ROTATE_L;
+	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 /* USER CODE END Application */
 
