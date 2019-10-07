@@ -219,18 +219,18 @@ static void TDA7439_SaveBackup(void)
 	RTC->BKP1R = *(uint32_t*)(&TDA7439_data[4]);
 	RTC->BKP2R = TDA7439_data[8];
 	// ---
-	HAL_CRC_Calculate(&hcrc, (uint32_t*)&RTC->BKP0R, 1);
-	HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP1R, 1);
-	RTC->BKP3R = HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP2R, 1);
+	HAL_CRC_Calculate(&hcrc, (uint32_t*)(&RTC->BKP0R), 1);
+	HAL_CRC_Accumulate(&hcrc, (uint32_t*)(&RTC->BKP1R), 1);
+	RTC->BKP3R = HAL_CRC_Accumulate(&hcrc, (uint32_t*)(&RTC->BKP2R), 1);
 }
 
 static void TDA7439_ReadBackup(void)
 {
 	HAL_PWR_EnableBkUpAccess();
 	// ---
-	HAL_CRC_Calculate(&hcrc, (uint32_t*)&RTC->BKP0R, 1);
-	HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP1R, 1);
-	if(HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP2R, 1) == RTC->BKP3R)
+	HAL_CRC_Calculate(&hcrc, (uint32_t*)(&RTC->BKP0R), 1);
+	HAL_CRC_Accumulate(&hcrc, (uint32_t*)(&RTC->BKP1R), 1);
+	if(HAL_CRC_Accumulate(&hcrc, (uint32_t*)(&RTC->BKP2R), 1) == RTC->BKP3R)
 	{
 		*(uint32_t*)(&TDA7439_data[0]) = RTC->BKP0R;
 		*(uint32_t*)(&TDA7439_data[4]) = RTC->BKP1R;
