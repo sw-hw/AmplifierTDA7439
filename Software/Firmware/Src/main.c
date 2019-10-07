@@ -22,6 +22,7 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "adc.h"
+#include "crc.h"
 #include "i2c.h"
 #include "spi.h"
 #include "gpio.h"
@@ -96,6 +97,7 @@ int main(void)
   MX_SPI2_Init();
   MX_I2C1_Init();
   MX_ADC1_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
   HAL_Delay(1000);
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);

@@ -1,6 +1,7 @@
 #include "TDA7439.h"
 #include "../VU/vu.h"
 #include <stdio.h>
+#include "crc.h"
 
 static uint8_t TDA7439_data[9];
 static t_TDA7439_Marker TDA7439_marker;
@@ -11,6 +12,8 @@ static void TDA7439_TurnOff(void);
 static void TDA7439_DisplayInit(void);
 static void TDA7439_DisplayRedrawSelector(void);
 static void TDA7439_DisplayRedrawVal(uint8_t draw_all); // 1 - draw all values; 0 - draw value according TDA7439_marker
+static void TDA7439_SaveBackup(void);
+static void TDA7439_ReadBackup(void);
 
 static void TDA7439_I2C_Transmit(void)
 {
@@ -22,15 +25,7 @@ static void TDA7439_TurnOn(void)
 	TDA7439_marker = TDA7439_MARKER_HEAD;
 	HAL_GPIO_WritePin(RELAY_GPIO_Port, RELAY_Pin, GPIO_PIN_SET);
 	HAL_Delay(1000);
-	TDA7439_data[0] = 0x10; 		// start sub-address and auto increment mode
-	TDA7439_data[1] = 0b11; 		// multiplexer
-	TDA7439_data[2] = 0b0000;		// input gain
-	TDA7439_data[3] = 0b0000; 		// volume
-	TDA7439_data[4] = 0b1101; 		// bass (0b0000 to 0b0111 to 0b1000)
-	TDA7439_data[5] = 0b0000; 		// mid-range (0b0000 to 0b0111 to 0b1000)
-	TDA7439_data[6] = 0b1000; 		// treble (0b0000 to 0b01111 to 0b1000)
-	TDA7439_data[7] = 72;			// first speaker attenuation
-	TDA7439_data[8] = 72;			// second speaker attenuation
+	TDA7439_ReadBackup();
 	TDA7439_I2C_Transmit();
 	// ---
 	TDA7439_DisplayInit();
@@ -216,6 +211,45 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 	} while(draw_all && marker < TDA7439_MARKER_enumMAX);
 }
 
+static void TDA7439_SaveBackup(void)
+{
+	HAL_PWR_EnableBkUpAccess();
+	// ---
+	RTC->BKP0R = *(uint32_t*)(&TDA7439_data[0]);
+	RTC->BKP1R = *(uint32_t*)(&TDA7439_data[4]);
+	RTC->BKP2R = TDA7439_data[8];
+	// ---
+	HAL_CRC_Calculate(&hcrc, (uint32_t*)&RTC->BKP0R, 1);
+	HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP1R, 1);
+	RTC->BKP3R = HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP2R, 1);
+}
+
+static void TDA7439_ReadBackup(void)
+{
+	HAL_PWR_EnableBkUpAccess();
+	// ---
+	HAL_CRC_Calculate(&hcrc, (uint32_t*)&RTC->BKP0R, 1);
+	HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP1R, 1);
+	if(HAL_CRC_Accumulate(&hcrc, (uint32_t*)&RTC->BKP2R, 1) == RTC->BKP3R)
+	{
+		*(uint32_t*)(&TDA7439_data[0]) = RTC->BKP0R;
+		*(uint32_t*)(&TDA7439_data[4]) = RTC->BKP1R;
+		TDA7439_data[8] = RTC->BKP2R;
+	}
+	else
+	{
+		TDA7439_data[0] = 0x10; 		// start sub-address and auto increment mode
+		TDA7439_data[1] = 0b11; 		// multiplexer
+		TDA7439_data[2] = 0b0000;		// input gain
+		TDA7439_data[3] = 0b0000; 		// volume
+		TDA7439_data[4] = 0b1101; 		// bass (0b0000 to 0b0111 to 0b1000)
+		TDA7439_data[5] = 0b0000; 		// mid-range (0b0000 to 0b0111 to 0b1000)
+		TDA7439_data[6] = 0b1000; 		// treble (0b0000 to 0b01111 to 0b1000)
+		TDA7439_data[7] = 72;			// first speaker attenuation
+		TDA7439_data[8] = 72;			// second speaker attenuation
+	}
+}
+
 // === Interface functions ===
 
 void TDA7439_EncoderButton(uint8_t state)
@@ -387,6 +421,7 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 	{
 		TDA7439_I2C_Transmit();
 		TDA7439_DisplayRedrawVal(0);
+		TDA7439_SaveBackup();
 	}
 }
 
