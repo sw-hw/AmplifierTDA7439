@@ -231,9 +231,28 @@ void StartTaskVU(void const * argument)
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
+	uint8_t a = 0, b = 0;
 	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
 	if(GPIO_Pin == ENCODER_C_Pin)
-		EncoderRotate = (HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin) == GPIO_PIN_SET) ? ENCODER_ROTATE_R : ENCODER_ROTATE_L;
+	{
+		if(b == 0)
+		{
+			EncoderRotate = ENCODER_ROTATE_L;
+			a = 1;
+		}
+		else
+			b = 0;
+	}
+	else if(GPIO_Pin == ENCODER_B_Pin)
+	{
+		if(a == 0)
+		{
+			EncoderRotate = ENCODER_ROTATE_R;
+			b = 1;
+		}
+		else
+			a = 0;
+	}
 	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
 /* USER CODE END Application */
