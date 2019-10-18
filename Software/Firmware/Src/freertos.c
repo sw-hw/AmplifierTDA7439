@@ -51,6 +51,7 @@
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
 #define	ADC_CONST_OFFSET	2043.0f	 // init value for IIR filters
 #define	VU_RING_LEN			30		 // length of rings ADC data (sampling frequency = 1 KHz)
+#define ENCODER_DELAY		100UL	 // delay before rotate the other way
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -231,27 +232,29 @@ void StartTaskVU(void const * argument)
 /* USER CODE BEGIN Application */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
-	uint8_t a = 0, b = 0;
+	// TODO think how to optimize
+	static uint32_t time_b = 0, time_c = 0;
 	UBaseType_t uxSavedInterruptStatus = taskENTER_CRITICAL_FROM_ISR();
-	if(GPIO_Pin == ENCODER_C_Pin)
+	switch(GPIO_Pin)
 	{
-		if(b == 0)
-		{
-			EncoderRotate = ENCODER_ROTATE_L;
-			a = 1;
-		}
-		else
-			b = 0;
-	}
-	else if(GPIO_Pin == ENCODER_B_Pin)
-	{
-		if(a == 0)
-		{
-			EncoderRotate = ENCODER_ROTATE_R;
-			b = 1;
-		}
-		else
-			a = 0;
+		case ENCODER_C_Pin:
+			if(HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_EXTI_IRQn))
+				if(HAL_GetTick() - time_c > ENCODER_DELAY)
+				{
+					EncoderRotate = ENCODER_ROTATE_R;
+					time_b = HAL_GetTick();
+				}
+			break;
+		case ENCODER_B_Pin:
+			if(HAL_GPIO_ReadPin(ENCODER_C_GPIO_Port, ENCODER_C_EXTI_IRQn))
+				if(HAL_GetTick() - time_b > ENCODER_DELAY)
+				{
+					EncoderRotate = ENCODER_ROTATE_L;
+					time_c = HAL_GetTick();
+				}
+			break;
+		default:
+			break;
 	}
 	taskEXIT_CRITICAL_FROM_ISR(uxSavedInterruptStatus);
 }
