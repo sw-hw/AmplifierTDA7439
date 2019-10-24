@@ -51,13 +51,11 @@
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
 #define	ADC_CONST_OFFSET	2043.0f	 // init value for IIR filters
 #define	VU_RING_LEN			30		 // length of rings ADC data (sampling frequency = 1 KHz)
-#define ENCODER_DELAY		3	 	 // delay before rotate the other way
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 __IO EncoderRotate_t EncoderRotate = ENCODER_ROTATE_NO;
-__IO uint16_t EncoderDelay 		   = 0;
 __IO int16_t VU_left_db  = 0x8000;
 __IO int16_t VU_right_db = 0x8000;
 /* USER CODE END Variables */
@@ -199,12 +197,11 @@ void StartDefaultTask(void const * argument)
 	  // ---
 	  TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
 	  // ---
-	  TDA7439_EncoderRotate((EncoderDelay == ENCODER_DELAY) ? EncoderRotate : ENCODER_ROTATE_NO);
-	  if(EncoderDelay)
-	  		EncoderDelay--;
+	  TDA7439_EncoderRotate(EncoderRotate);
+	  EncoderRotate = ENCODER_ROTATE_NO;
 	  // ---
 	  taskEXIT_CRITICAL();
-	  osDelay(50);
+	  osDelay(25);
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -238,14 +235,12 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	switch(GPIO_Pin)
 	{
 		case ENCODER_C_Pin:
-			if(EncoderDelay == 0)
+			if(HAL_GPIO_ReadPin(ENCODER_B_GPIO_Port, ENCODER_B_Pin) == GPIO_PIN_RESET)
 				EncoderRotate = ENCODER_ROTATE_R;
-			EncoderDelay = ENCODER_DELAY;
 			break;
 		case ENCODER_B_Pin:
-			if(EncoderDelay == 0)
+			if(HAL_GPIO_ReadPin(ENCODER_C_GPIO_Port, ENCODER_C_Pin) == GPIO_PIN_RESET)
 				EncoderRotate = ENCODER_ROTATE_L;
-			EncoderDelay = ENCODER_DELAY;
 			break;
 		default:
 			break;
