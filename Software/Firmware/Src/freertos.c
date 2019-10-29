@@ -242,6 +242,9 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			if(HAL_GPIO_ReadPin(ENCODER_C_GPIO_Port, ENCODER_C_Pin) == GPIO_PIN_RESET)
 				EncoderRotate = ENCODER_ROTATE_L;
 			break;
+		case IR_Pin:
+			// TODO
+			break;
 		default:
 			break;
 	}

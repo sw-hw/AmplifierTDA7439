@@ -74,6 +74,9 @@ void Error_Handler(void);
 #define OPTO_GPIO_Port GPIOB
 #define POW_HEAD_Pin GPIO_PIN_8
 #define POW_HEAD_GPIO_Port GPIOA
+#define IR_Pin GPIO_PIN_15
+#define IR_GPIO_Port GPIOA
+#define IR_EXTI_IRQn EXTI15_10_IRQn
 #define DISPLAY_CS_Pin GPIO_PIN_3
 #define DISPLAY_CS_GPIO_Port GPIOB
 #define DISPLAY_DC_RS_Pin GPIO_PIN_4
