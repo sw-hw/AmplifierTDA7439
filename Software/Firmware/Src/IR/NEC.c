@@ -8,27 +8,28 @@ typedef enum {
 	// TODO NEC_State_WaitingRepeat
 } t_NEC_State;
 
-static t_NEC_State NEC_State = NEC_State_Ready;
-static uint32_t	   NEC_Time    = 0UL;
-static uint32_t	   NEC_Data    = 0UL;
-static uint8_t	   NEC_Index   = 0;
-static int16_t	   NEC_Command = -1;
+static t_NEC_State NEC_State   = NEC_State_Ready;
+static int16_t	   NEC_Command = -1; // -1 - not pressed any key; 0x00..0xFF - code of pressed key
+static uint32_t	   NEC_Time;
+static uint32_t	   NEC_DATA_BUFFER;
+static uint8_t	   NEC_Bit_Counter;
 
 static int8_t newDataBit(uint32_t dt); // -1 - error; 0 - bit was added; 1 - last bit was added
 static int8_t checkData(void);         // -1 - error checksum; 0 - not corrected address; 1 - OK
 
 static int8_t newDataBit(uint32_t dt)
 {
-	if(NEC_Index > 31)
+	if(NEC_Bit_Counter > 31)
 		return -1;
+	NEC_DATA_BUFFER <<= 1;
 	if(dt < NEC_TIME_LOG_0_MAX)
-		NEC_Data &= ~(1UL << NEC_Index);
+		NEC_DATA_BUFFER &= 0xFE;
 	else if(dt < NEC_TIME_LOG_1_MAX)
-		NEC_Data |= (1UL << NEC_Index);
+		NEC_DATA_BUFFER |= 0x01;
 	else
 		return -1;
-	NEC_Index++;
-	if(NEC_Index < 32)
+	NEC_Bit_Counter++;
+	if(NEC_Bit_Counter < 32)
 		return 0;
 	else
 		return 1;
@@ -36,10 +37,10 @@ static int8_t newDataBit(uint32_t dt)
 
 static int8_t checkData(void)
 {
-	const uint8_t address_p = NEC_Data >> 24;
-	const uint8_t address_n = NEC_Data >> 16;
-	const uint8_t command_p = NEC_Data >> 8;
-	const uint8_t command_n = NEC_Data;
+	const uint8_t address_p = NEC_DATA_BUFFER >> 24;
+	const uint8_t address_n = NEC_DATA_BUFFER >> 16;
+	const uint8_t command_p = NEC_DATA_BUFFER >> 8;
+	const uint8_t command_n = NEC_DATA_BUFFER;
 	if(address_p == ~address_n && command_p == ~command_n)
 	{
 		if(NEC_ADDRESS == address_p)
@@ -94,7 +95,7 @@ void NEC_SetEdge(uint8_t rising)
 				const uint32_t dt = NEC_TIMER->CNT - NEC_Time;
 				if(NEC_TIME_PAUSE_MIN < dt && dt < NEC_TIME_PAUSE_MAX)
 				{
-					NEC_Index = 0;
+					NEC_Bit_Counter = 0;
 					NEC_Time = NEC_TIMER->CNT;
 					NEC_State = NEC_State_DataBit;
 				}
