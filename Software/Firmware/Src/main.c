@@ -104,6 +104,7 @@ int main(void)
   HAL_Delay(1000);
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
   HAL_GPIO_WritePin(LED_BLUE_GPIO_Port, LED_BLUE_Pin, GPIO_PIN_SET);
+  HAL_TIM_Base_Start(&htim2); // Start timer for NEC protocol
   /* USER CODE END 2 */
 
   /* Call init function for freertos objects (in freertos.c) */

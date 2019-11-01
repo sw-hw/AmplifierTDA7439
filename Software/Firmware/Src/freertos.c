@@ -33,6 +33,7 @@
 #include "adc.h"
 #include <stdlib.h>
 #include <math.h>
+#include "IR/NEC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -114,6 +115,8 @@ void vApplicationTickHook( void )
 		// ===
 		HAL_ADCEx_InjectedStart(&hadc1);
 	}
+	// ===
+	NEC_Tick();
 }
 
 int16_t realToInt(float value)
@@ -200,6 +203,8 @@ void StartDefaultTask(void const * argument)
 	  TDA7439_EncoderRotate(EncoderRotate);
 	  EncoderRotate = ENCODER_ROTATE_NO;
 	  // ---
+	  // TODO NEC_Command
+	  // ---
 	  taskEXIT_CRITICAL();
 	  osDelay(25);
   }
@@ -243,7 +248,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				EncoderRotate = ENCODER_ROTATE_L;
 			break;
 		case IR_Pin:
-			// TODO
+			NEC_SetEdge(HAL_GPIO_ReadPin(IR_GPIO_Port, IR_Pin) == GPIO_PIN_SET);
 			break;
 		default:
 			break;
