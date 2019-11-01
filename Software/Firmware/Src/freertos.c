@@ -248,8 +248,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 				EncoderRotate = ENCODER_ROTATE_L;
 			break;
 		case IR_Pin:
-			if(HAL_GPIO_ReadPin(IR_GPIO_Port, IR_Pin) == GPIO_PIN_SET)	// TODO
-				NEC_SignalEdge();
+			NEC_SignalEdge();
 			break;
 		default:
 			break;
