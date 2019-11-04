@@ -5,7 +5,7 @@
 
 // === configuration ===
 #define NEC_TIMER				TIM2
-#define NEC_ADDRESS				0x00
+#define NEC_ADDRESS				0x00	// TODO
 // ---
 #define NEC_TIME_START_MIN  	12000UL 	// us
 #define NEC_TIME_START_MAX		15000UL 	// us

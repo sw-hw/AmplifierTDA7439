@@ -30,6 +30,14 @@
 #define	TDA7439_MARK_UNSELECT_SIMBOL		' '
 #define	TDA7439_MARK_SELECTED_SIMBOL		'>'
 #define	TDA7439_COLOR_MARK					ILI9488_ORANGE
+// ---
+// TODO
+#define	TDA7439_BUTCODE_POWER				0x00
+#define	TDA7439_BUTCODE_MARKER_UP			0x01
+#define	TDA7439_BUTCODE_MARKER_DOWN			0x02
+#define	TDA7439_BUTCODE_VAL_UP				0x03
+#define	TDA7439_BUTCODE_VAL_DOWN			0x04
+#define	TDA7439_TIME_BUT_POWER				5000UL
 // ==============
 
 typedef enum {
@@ -55,7 +63,8 @@ typedef enum {
 // === Interface functions ===
 void 	TDA7439_EncoderButton(uint8_t state);				// 0 - push down; 1 - push up
 void 	TDA7439_EncoderRotate(EncoderRotate_t rotate);
-uint8_t	TDA7439_GetAmplifierState();						// 0 - OFF; 1 - ON
+void	TDA7439_ButtonCode(int16_t code);
+uint8_t	TDA7439_GetAmplifierState(void);					// 0 - OFF; 1 - ON
 // =================
 
 // === macros for bass, mid, treble ===

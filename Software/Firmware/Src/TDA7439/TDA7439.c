@@ -486,7 +486,43 @@ void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 	}
 }
 
-uint8_t	TDA7439_GetAmplifierState()
+void	TDA7439_ButtonCode(int16_t code)
+{
+	static uint32_t time_change_power_state = 0;
+	static uint8_t	enable_change_power_state = 1;
+	if(!enable_change_power_state && HAL_GetTick() - time_change_power_state > TDA7439_TIME_BUT_POWER)
+		enable_change_power_state = 1;
+	switch(code)
+	{
+		case TDA7439_BUTCODE_POWER:
+			if(enable_change_power_state)
+			{
+				if(HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
+					TDA7439_TurnOff();
+				else
+					TDA7439_TurnOn();
+				time_change_power_state = HAL_GetTick();
+				enable_change_power_state = 0;
+			}
+			break;
+		case TDA7439_BUTCODE_MARKER_UP:
+			TDA7439_MarkerUp();
+			break;
+		case TDA7439_BUTCODE_MARKER_DOWN:
+			TDA7439_MarkerDown();
+			break;
+		case TDA7439_BUTCODE_VAL_UP:
+			TDA7439_ChangeMarkedValue(1);
+			break;
+		case TDA7439_BUTCODE_VAL_DOWN:
+			TDA7439_ChangeMarkedValue(0);
+			break;
+		default:
+			break;
+	}
+}
+
+uint8_t	TDA7439_GetAmplifierState(void)
 {
 	return HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin);
 }

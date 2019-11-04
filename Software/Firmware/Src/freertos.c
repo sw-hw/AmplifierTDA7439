@@ -79,7 +79,7 @@ void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 void vApplicationTickHook(void);
 
 /* USER CODE BEGIN 3 */
-void vApplicationTickHook( void )
+void vApplicationTickHook(void)
 {
 	if(TDA7439_GetAmplifierState())
 	{
@@ -203,10 +203,10 @@ void StartDefaultTask(void const * argument)
 	  TDA7439_EncoderRotate(EncoderRotate);
 	  EncoderRotate = ENCODER_ROTATE_NO;
 	  // ---
-	  // TODO NEC_Command
+	  TDA7439_ButtonCode(NEC_GetCommand());
 	  // ---
 	  taskEXIT_CRITICAL();
-	  osDelay(25);
+	  osDelay(25); // should be less ~110ms (period NEC protocol)
   }
   /* USER CODE END StartDefaultTask */
 }
