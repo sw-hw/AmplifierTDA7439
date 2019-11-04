@@ -429,7 +429,7 @@ void TDA7439_EncoderButton(uint8_t state)
 {
 	static uint32_t last_time = 0;
 	static uint8_t enable = 0;
-	if(HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
+	if(TDA7439_GetAmplifierState())
 	{
 		static uint8_t short_push = 0;
 		if(state)
@@ -471,7 +471,7 @@ void TDA7439_EncoderButton(uint8_t state)
 
 void TDA7439_EncoderRotate(EncoderRotate_t rotate)
 {
-	if(!HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
+	if(!TDA7439_GetAmplifierState())
 		return;
 	switch(rotate)
 	{
@@ -497,7 +497,7 @@ void	TDA7439_ButtonCode(int16_t code)
 		case TDA7439_BUTCODE_POWER:
 			if(enable_change_power_state)
 			{
-				if(HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin))
+				if(TDA7439_GetAmplifierState())
 					TDA7439_TurnOff();
 				else
 					TDA7439_TurnOn();
@@ -524,5 +524,5 @@ void	TDA7439_ButtonCode(int16_t code)
 
 uint8_t	TDA7439_GetAmplifierState(void)
 {
-	return HAL_GPIO_ReadPin(RELAY_GPIO_Port, RELAY_Pin);
+	return (RELAY_GPIO_Port->ODR & RELAY_Pin) ? 1 : 0;
 }
