@@ -158,13 +158,13 @@ static void TDA7439_DisplayRedrawVal(uint8_t draw_all)
 		switch(marker)
 		{
 			case TDA7439_MARKER_HEAD:
-				if(HAL_GPIO_ReadPin(POW_HEAD_GPIO_Port, POW_HEAD_Pin))
+				if(POW_HEAD_GPIO_Port->ODR & POW_HEAD_Pin)
 					ILI9488_Draw_Text("ON ", TDA7439_LEFT_OFFSET_FIRST_VALS,  TDA7439_TOP_OFFSET_FIRST_ROW,  ILI9488_GREEN, 	 TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				else
 					ILI9488_Draw_Text("OFF", TDA7439_LEFT_OFFSET_FIRST_VALS,  TDA7439_TOP_OFFSET_FIRST_ROW,  TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				break;
 			case TDA7439_MARKER_POW_AMP:
-				if(HAL_GPIO_ReadPin(OPTO_GPIO_Port, OPTO_Pin))
+				if(OPTO_GPIO_Port->ODR & OPTO_Pin)
 					ILI9488_Draw_Text("ON ",  TDA7439_LEFT_OFFSET_FIRST_VALS,  TDA7439_TOP_OFFSET_SECOND_ROW, ILI9488_GREEN,	  TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 				else
 					ILI9488_Draw_Text("OFF",  TDA7439_LEFT_OFFSET_FIRST_VALS,  TDA7439_TOP_OFFSET_SECOND_ROW, TDA7439_COLOR_VALS, TDA7439_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
@@ -506,16 +506,20 @@ void	TDA7439_ButtonCode(int16_t code)
 			}
 			break;
 		case TDA7439_BUTCODE_MARKER_UP:
-			TDA7439_MarkerUp();
+			if(TDA7439_GetAmplifierState())
+				TDA7439_MarkerUp();
 			break;
 		case TDA7439_BUTCODE_MARKER_DOWN:
-			TDA7439_MarkerDown();
+			if(TDA7439_GetAmplifierState())
+				TDA7439_MarkerDown();
 			break;
 		case TDA7439_BUTCODE_VAL_UP:
-			TDA7439_ChangeMarkedValue(1);
+			if(TDA7439_GetAmplifierState())
+				TDA7439_ChangeMarkedValue(1);
 			break;
 		case TDA7439_BUTCODE_VAL_DOWN:
-			TDA7439_ChangeMarkedValue(0);
+			if(TDA7439_GetAmplifierState())
+				TDA7439_ChangeMarkedValue(0);
 			break;
 		default:
 			break;
