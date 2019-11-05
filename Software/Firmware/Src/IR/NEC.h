@@ -12,7 +12,7 @@
 #define	NEC_TIME_REPEAT_MIN		10500UL		// us
 #define	NEC_TIME_REPEAT_MAX		12000UL		// us
 #define	NEC_TIME_EDGE_LOGIC		1687UL		// us
-#define	NEC_TIMEOUT				200000UL	// us
+#define	NEC_TIMEOUT				120000UL	// us
 // ======================
 typedef enum {
 	NEC_State_Ready = 0,

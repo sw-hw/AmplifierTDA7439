@@ -40,7 +40,9 @@ void NEC_SignalEdge(void)
 		case NEC_State_DataBit:
 		{
 			const uint32_t dt = NEC_TIMER->CNT - NEC_Time;
-			if(dt < (NEC_TIME_EDGE_LOGIC << 1))
+			if(dt > (NEC_TIME_EDGE_LOGIC << 1))
+				NEC_State = NEC_State_Ready;
+			else
 			{
 				NEC_DATA_BUFFER <<= 1;
 				if(dt > NEC_TIME_EDGE_LOGIC)
@@ -64,8 +66,6 @@ void NEC_SignalEdge(void)
 				else
 					NEC_Time = NEC_TIMER->CNT;
 			}
-			else
-				NEC_State = NEC_State_Ready;
 			break;
 		}
 		case NEC_State_WaitingRepeat:
