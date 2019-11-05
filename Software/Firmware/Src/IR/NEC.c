@@ -40,27 +40,32 @@ void NEC_SignalEdge(void)
 		case NEC_State_DataBit:
 		{
 			const uint32_t dt = NEC_TIMER->CNT - NEC_Time;
-			NEC_DATA_BUFFER <<= 1;
-			if(dt > NEC_TIME_EDGE_LOGIC)
-				NEC_DATA_BUFFER |= 0x01;
-			NEC_Bit_Counter++;
-			if(NEC_Bit_Counter == 32) // if was received last bit
+			if(dt < (NEC_TIME_EDGE_LOGIC << 1))
 			{
-				const uint8_t address_p = NEC_DATA_BUFFER >> 24;
-				const uint8_t address_n = NEC_DATA_BUFFER >> 16;
-				const uint8_t command_p = NEC_DATA_BUFFER >> 8;
-				const uint8_t command_n = NEC_DATA_BUFFER;
-				if(NEC_ADDRESS == address_p && address_p == ~address_n && command_p == ~command_n)
+				NEC_DATA_BUFFER <<= 1;
+				if(dt > NEC_TIME_EDGE_LOGIC)
+					NEC_DATA_BUFFER |= 0x01;
+				NEC_Bit_Counter++;
+				if(NEC_Bit_Counter == 32) // if last bit of data was received
 				{
-					NEC_Command = command_p;
-					NEC_Time = NEC_TIMER->CNT;
-					NEC_State = NEC_State_WaitingRepeat;
+					const uint8_t address_p = NEC_DATA_BUFFER >> 24;
+					const uint8_t address_n = NEC_DATA_BUFFER >> 16;
+					const uint8_t command_p = NEC_DATA_BUFFER >> 8;
+					const uint8_t command_n = NEC_DATA_BUFFER;
+					if(NEC_ADDRESS == address_p && address_p == ~address_n && command_p == ~command_n)
+					{
+						NEC_Command = command_p;
+						NEC_Time = NEC_TIMER->CNT;
+						NEC_State = NEC_State_WaitingRepeat;
+					}
+					else
+						NEC_State = NEC_State_Ready;
 				}
 				else
-					NEC_State = NEC_State_Ready;
+					NEC_Time = NEC_TIMER->CNT;
 			}
 			else
-				NEC_Time = NEC_TIMER->CNT;
+				NEC_State = NEC_State_Ready;
 			break;
 		}
 		case NEC_State_WaitingRepeat:

@@ -8,12 +8,11 @@
 #define NEC_ADDRESS				0x00	// TODO
 // ---
 #define NEC_TIME_START_MIN  	12000UL 	// us
-#define NEC_TIME_START_MAX		15000UL 	// us
+#define NEC_TIME_START_MAX		15000UL	 	// us
 #define	NEC_TIME_REPEAT_MIN		10500UL		// us
 #define	NEC_TIME_REPEAT_MAX		12000UL		// us
-#define	NEC_TIME_EDGE_LOGIC		1688UL		// us
+#define	NEC_TIME_EDGE_LOGIC		1687UL		// us
 #define	NEC_TIMEOUT				200000UL	// us
-
 // ======================
 typedef enum {
 	NEC_State_Ready = 0,
@@ -24,8 +23,8 @@ typedef enum {
 } t_NEC_State;
 
 // === Interface functions ===
-void NEC_Tick(void);
-void NEC_SignalEdge(void);
+void 	NEC_Tick(void); // should be called with a period of 1ms
+void 	NEC_SignalEdge(void);
 int16_t NEC_GetCommand(void);
 
 #endif
