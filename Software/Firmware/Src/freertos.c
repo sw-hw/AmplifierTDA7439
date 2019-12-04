@@ -196,7 +196,7 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  taskENTER_CRITICAL();
+	  //taskENTER_CRITICAL();
 	  // ---
 	  TDA7439_EncoderButton(HAL_GPIO_ReadPin(ENCODER_A_GPIO_Port, ENCODER_A_Pin));
 	  // ---
@@ -205,7 +205,7 @@ void StartDefaultTask(void const * argument)
 	  // ---
 	  TDA7439_ButtonCode(NEC_GetCommand());
 	  // ---
-	  taskEXIT_CRITICAL();
+	  //taskEXIT_CRITICAL();
 	  osDelay(25); // should be less ~110ms (period NEC protocol)
   }
   /* USER CODE END StartDefaultTask */
@@ -224,10 +224,18 @@ void StartTaskVU(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-	  taskENTER_CRITICAL();
+	  /*
+	   * 1. Нельзя вызывать VU_DisplaySignal в критической секции, потому что
+	   * нарушается приоритет внешнего прерывания NEC и пульт плохо реагирует на кнопки
+	   * (при перерисовке VU сегментов)
+	   * 2. При повышении приоритета задачи StartTaskVU выше, чем у StartDefaultTask,
+	   * появляются проблемы с работой дисплея
+	   * */
+	  //taskENTER_CRITICAL();
 	  if(TDA7439_GetAmplifierState())
 		  VU_DisplaySignal(VU_left_db, VU_right_db);
-	  taskEXIT_CRITICAL();
+	  //taskEXIT_CRITICAL();
+	  osDelay(1);
   }
   /* USER CODE END StartTaskVU */
 }
