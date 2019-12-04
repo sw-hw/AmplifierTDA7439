@@ -50,8 +50,8 @@
 /* USER CODE BEGIN PM */
 #define ADC_K_IIR			0.0001f  // coef. IIR filters
 #define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	2043.0f	 // init value for IIR filters
-#define	VU_RING_LEN			30		 // length of rings ADC data (sampling frequency = 1 KHz)
+#define	ADC_CONST_OFFSET	2048.0f	 // init value for IIR filters
+#define	VU_RING_LEN			20		 // length of rings ADC data (sampling frequency = 1 KHz)
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
