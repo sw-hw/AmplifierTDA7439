@@ -5,13 +5,14 @@
 
 // === configuration ===
 #define NEC_TIMER				TIM2
-#define NEC_ADDRESS				0x00	// TODO
+#define NEC_ADDRESS				0x00
 // ---
 #define NEC_TIME_START_MIN  	12000UL 	// us
 #define NEC_TIME_START_MAX		15000UL	 	// us
 #define	NEC_TIME_REPEAT_MIN		10500UL		// us
 #define	NEC_TIME_REPEAT_MAX		12000UL		// us
 #define	NEC_TIME_EDGE_LOGIC		1687UL		// us
+#define	NEC_TIME_BUT_HOLD		700000UL	// us
 #define	NEC_TIMEOUT				120000UL	// us
 // ======================
 typedef enum {

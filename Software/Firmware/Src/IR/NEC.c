@@ -3,6 +3,7 @@
 static t_NEC_State NEC_State   = NEC_State_Ready;
 static int16_t	   NEC_Command = -1; // -1 - not pressed any key; 0x00..0xFF - code of pressed key
 static uint32_t	   NEC_Time;
+static uint32_t	   NEC_TimeCommand;
 static uint32_t	   NEC_DATA_BUFFER;
 static uint8_t	   NEC_Bit_Counter;
 
@@ -54,10 +55,11 @@ void NEC_SignalEdge(void)
 					const uint8_t address_n = NEC_DATA_BUFFER >> 16;
 					const uint8_t command_p = NEC_DATA_BUFFER >> 8;
 					const uint8_t command_n = NEC_DATA_BUFFER;
-					if(NEC_ADDRESS == address_p && address_p == ~address_n && command_p == ~command_n)
+					if(NEC_ADDRESS == address_p && address_p == (uint8_t)~address_n && command_p == (uint8_t)~command_n)
 					{
 						NEC_Command = command_p;
 						NEC_Time = NEC_TIMER->CNT;
+						NEC_TimeCommand = NEC_Time;
 						NEC_State = NEC_State_WaitingRepeat;
 					}
 					else
@@ -79,8 +81,9 @@ void NEC_SignalEdge(void)
 			const uint32_t dt = NEC_TIMER->CNT - NEC_Time;
 			if(NEC_TIME_REPEAT_MIN < dt && dt < NEC_TIME_REPEAT_MAX)
 			{
-				NEC_Command = (NEC_DATA_BUFFER >> 8) & 0xFF;
 				NEC_Time = NEC_TIMER->CNT;
+				if(NEC_Time - NEC_TimeCommand > NEC_TIME_BUT_HOLD)
+					NEC_Command = (NEC_DATA_BUFFER >> 8) & 0xFF;
 				NEC_State = NEC_State_WaitingRepeat;
 			}
 			else

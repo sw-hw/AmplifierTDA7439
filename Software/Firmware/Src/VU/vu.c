@@ -20,7 +20,7 @@ static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state)
 {
 	// segment 0..(VU_MAX_NUM_LED - 1)
 	const uint16_t left_offset = segment * VU_DIST_LED;
-	const uint16_t color	   = state ? (segment > 15 ? ILI9488_RED : (segment > 13 ? ILI9488_ORANGE : ILI9488_GREEN)) : ILI9488_COLOR_BACKGROUND;
+	const uint16_t color	   = state ? (segment > 16 ? ILI9488_RED : (segment > 14 ? ILI9488_ORANGE : ILI9488_GREEN)) : ILI9488_COLOR_BACKGROUND;
 	const uint16_t top_offset  = channel ? VU_TOP_OFFSET_SECOND_LED : VU_TOP_OFFSET_FIRST_LED;
 	ILI9488_Draw_Rectangle(VU_LEFT_OFFSET_LED + left_offset, top_offset, VU_SIZE_LED, VU_SIZE_LED, color);
 }
