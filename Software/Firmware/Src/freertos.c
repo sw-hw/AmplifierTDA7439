@@ -48,17 +48,17 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-#define ADC_K_IIR			0.0001f  // coef. IIR filters
-#define ADC_REF_0DB 		1024.0f	 // reference value corresponding to 0 dB
-#define	ADC_CONST_OFFSET	2048.0f	 // init value for IIR filters
-#define	VU_RING_LEN			20		 // length of rings ADC data (sampling frequency = 1 KHz)
+#define ADC_K_IIR			0.0001f	// coef. IIR filters (it needs to be calculated according ADC_FREQ_DIF)
+#define ADC_REF_0DB 		1024.0f	// reference value corresponding to 0 dB
+#define	ADC_CONST_OFFSET	2042.0f	// init value for IIR filters
+#define	ADC_FREQ_DIV		30
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 __IO EncoderRotate_t EncoderRotate = ENCODER_ROTATE_NO;
-__IO int16_t VU_left_db  = 0x8000;
-__IO int16_t VU_right_db = 0x8000;
+
 /* USER CODE END Variables */
 osThreadId defaultTaskHandle;
 osThreadId TaskVUHandle;
@@ -81,40 +81,9 @@ void vApplicationTickHook(void);
 /* USER CODE BEGIN 3 */
 void vApplicationTickHook(void)
 {
-	if(TDA7439_GetAmplifierState())
-	{
-		static float avg_left_f  = ADC_CONST_OFFSET;
-		static float avg_right_f = ADC_CONST_OFFSET;
-		static int16_t L[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
-		static int16_t R[VU_RING_LEN] = { [0 ... (VU_RING_LEN - 1)] = 0 };
-		static uint16_t vu_counter = 0;
-		int16_t last_left = 0, last_right = 0, l_max = 0, r_max = 0;
-		// ---
-		last_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-		last_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
-		// ---
-		L[vu_counter] = abs(last_left - realToInt(avg_left_f));
-		avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + last_left * ADC_K_IIR;
-		R[vu_counter] = abs(last_right - realToInt(avg_right_f));
-		avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + last_right * ADC_K_IIR;
-		vu_counter++;
-		if(vu_counter == VU_RING_LEN)
-			vu_counter = 0;
-		for(uint16_t i = 0; i < VU_RING_LEN; i++)
-		{
-			if(L[i] > l_max)
-				l_max = L[i];
-			if(R[i] > r_max)
-				r_max = R[i];
-		}
-		VU_left_db  = ConvertTo_dB(l_max);
-		VU_right_db = ConvertTo_dB(r_max);
-		/* TODO
-		 * if VU_left_db > 0 or VU_right_db > 0 duration > 3000 ms, turn OFF power amplifier for 5000ms
-		 * */
-		// ===
-		HAL_ADCEx_InjectedStart(&hadc1);
-	}
+	/*
+	 * vApplicationTickHook not calling while task in critical section
+	 * */
 	// ===
 	NEC_Tick();
 }
@@ -203,7 +172,7 @@ void StartDefaultTask(void const * argument)
 	  // ---
 	  TDA7439_ButtonCode(NEC_GetCommand());
 	  // ---
-	  osDelay(25); // should be less ~110ms (period NEC protocol)
+	  osDelay(25); // should be less than period of commands NEC protocol
   }
   /* USER CODE END StartDefaultTask */
 }
@@ -223,7 +192,51 @@ void StartTaskVU(void const * argument)
   {
 	  taskENTER_CRITICAL();
 	  if(TDA7439_GetAmplifierState())
-		  VU_DisplaySignal(VU_left_db, VU_right_db);
+	  {
+		  static int16_t db_left  = 0x8000;
+		  static int16_t db_right = 0x8000;
+		  static float avg_left_f  = ADC_CONST_OFFSET;
+		  static float avg_right_f = ADC_CONST_OFFSET;
+		  static uint16_t adc_counter = 0;
+		  static int16_t left_max = 0;
+		  static int16_t right_max = 0;
+		  int16_t adc_left, adc_right, cur_left, cur_right;
+		  // ---
+		  adc_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+		  adc_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+		  HAL_ADCEx_InjectedStart(&hadc1);
+		  // ---
+		  cur_left = abs(adc_left - realToInt(avg_left_f));
+		  cur_right = abs(adc_right - realToInt(avg_right_f));
+		  // ---
+		  avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + adc_left * ADC_K_IIR;
+		  avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + adc_right * ADC_K_IIR;
+		  // ---
+		  if(cur_left > left_max)
+			  left_max = cur_left;
+		  if(cur_right > right_max)
+			  right_max = cur_right;
+		  // ---
+		  adc_counter++;
+		  if(0 == (adc_counter % ADC_FREQ_DIV))
+		  {
+			  db_left  = ConvertTo_dB(left_max);
+			  db_right = ConvertTo_dB(right_max);
+			  // ---
+			  left_max = 0;
+			  right_max = 0;
+			  adc_counter = 0;
+		  }
+		  // ---
+		  // ===
+		  /*
+		  if(db_left >= -45 || db_right >= -45)
+		  {
+			  volatile uint32_t just_for_debug = 0;
+		  }//*/
+		  // ===
+		  VU_DisplaySignal(db_left, db_right);
+	  }
 	  taskEXIT_CRITICAL();
 	  osDelay(1);
   }
