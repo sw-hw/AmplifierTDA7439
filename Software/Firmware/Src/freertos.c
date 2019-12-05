@@ -197,13 +197,22 @@ void StartTaskVU(void const * argument)
 		  static int16_t db_right = 0x8000;
 		  static float avg_left_f  = ADC_CONST_OFFSET;
 		  static float avg_right_f = ADC_CONST_OFFSET;
-		  static uint16_t adc_counter = 0;
+		  static int16_t adc_counter = -1;
 		  static int16_t left_max = 0;
 		  static int16_t right_max = 0;
 		  int16_t adc_left, adc_right, cur_left, cur_right;
 		  // ---
-		  adc_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-		  adc_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+		  if(adc_counter != -1)
+		  {
+			  adc_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
+			  adc_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
+		  }
+		  else
+		  {
+			  adc_left = ADC_CONST_OFFSET;
+			  adc_right = ADC_CONST_OFFSET;
+			  adc_counter = 0;
+		  }
 		  HAL_ADCEx_InjectedStart(&hadc1);
 		  // ---
 		  cur_left = abs(adc_left - realToInt(avg_left_f));
