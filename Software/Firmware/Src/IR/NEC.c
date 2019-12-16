@@ -1,11 +1,11 @@
 #include "NEC.h"
 
-static t_NEC_State NEC_State   = NEC_State_Ready;
-static int16_t	   NEC_Command = -1; // -1 - not pressed any key; 0x00..0xFF - code of pressed key
-static uint32_t	   NEC_Time;
-static uint32_t	   NEC_TimeCommand;
-static uint32_t	   NEC_DATA_BUFFER;
-static uint8_t	   NEC_Bit_Counter;
+static __IO t_NEC_State NEC_State   = NEC_State_Ready;
+static __IO int16_t	    NEC_Command = -1; // -1 - not pressed any key; 0x00..0xFF - code of pressed key
+static __IO uint32_t	NEC_Time;
+static __IO uint32_t	NEC_TimeCommand;
+static __IO uint32_t    NEC_DATA_BUFFER;
+static __IO uint8_t	    NEC_Bit_Counter;
 
 // === Interface functions ===
 
