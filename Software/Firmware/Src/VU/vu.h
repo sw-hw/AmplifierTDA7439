@@ -4,6 +4,8 @@
 #include "../ILI9488/ILI9488_STM32_Driver.h"
 #include "../ILI9488/ILI9488_GFX.h"
 
+#define	VU_N								2
+// ===
 #define	VU_DIST_LED							24
 #define	VU_LEFT_OFFSET_LED_LABEL			10
 #define	VU_TOP_OFFSET_FIRST_LED				180
@@ -28,7 +30,7 @@ typedef enum {
 } VU_mode_t;
 
 void		VU_Init(void);
-void		VU_DisplaySignal(int16_t left, int16_t right);	// left and right signal in dB
+void		VU_DisplaySignal(int16_t DB_Signals[]);	// left and right signals in dB
 VU_mode_t	VU_GetMode(void);
 void		VU_NextMode(void);
 void		VU_PrevMode(void);

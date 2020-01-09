@@ -2,13 +2,9 @@
 
 static __IO VU_mode_t VU_mode;
 
-static __IO int16_t left_cur_segment_led;
-static __IO int16_t right_cur_segment_led;
-
-static __IO uint32_t left_peak_time_led;
-static __IO uint32_t right_peak_time_led;
-static __IO int16_t	left_peak_segment_led;
-static __IO int16_t	right_peak_segment_led;
+static __IO int16_t Cur_Segment_Led[VU_N];
+static __IO uint32_t Peak_Time_Led[VU_N];
+static __IO int16_t	Peak_Segment_Led[VU_N];
 
 static void	VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state);
 static void	VU_EraseScale(void);
@@ -51,10 +47,10 @@ static void	VU_ApplyMode(void)
 	ILI9488_Draw_Text("R",	  		  VU_LEFT_OFFSET_LED_LABEL,					  VU_TOP_OFFSET_SECOND_LED + ((VU_SIZE_LED - 16) >> 1),
 			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 	// ---
-	left_cur_segment_led  = -1;
-	right_cur_segment_led = -1;
-	left_peak_segment_led = -1;
-	right_peak_segment_led = -1;
+	Cur_Segment_Led[0] = -1;
+	Cur_Segment_Led[1] = -1;
+	Peak_Segment_Led[0] = -1;
+	Peak_Segment_Led[1] = -1;
 }
 
 // ===
@@ -65,109 +61,68 @@ void	VU_Init(void)
 	VU_ApplyMode();
 }
 
-void	VU_DisplaySignal(int16_t left, int16_t right)
+void	VU_DisplaySignal(int16_t DB_Signals[])
 {
-	int16_t left_segment = (left + (45 + 3)) / 3;
-	int16_t right_segment = (right + (45 + 3)) / 3;
+	static uint8_t Peak_Time[VU_N] = { 0, 0 };
+	const uint32_t hal_time = HAL_GetTick();
+	int16_t i_channel;
 	// ---
-	if(left_segment < 0)
-		left_segment = 0;
-	else if(left_segment > VU_MAX_NUM_LED)
-		left_segment = VU_MAX_NUM_LED;
-	// ---
-	if(left_segment > left_cur_segment_led)
+	for(i_channel = 0; i_channel < VU_N; i_channel++)
 	{
-		left_cur_segment_led++;
-		VU_RedrawScaleLed(left_cur_segment_led, 0, 1);
-	}
-	else if(left_segment < left_cur_segment_led)
-	{
+		int16_t segment = (DB_Signals[i_channel] + (45 + 3)) / 3;
+		if(segment < 0)
+			segment = 0;
+		else if(segment > VU_MAX_NUM_LED)
+			segment = VU_MAX_NUM_LED;
+		// ---
+		if(segment > Cur_Segment_Led[i_channel])
+		{
+			Cur_Segment_Led[i_channel]++;
+			VU_RedrawScaleLed(Cur_Segment_Led[i_channel], i_channel, 1);
+		}
+		else if(segment < Cur_Segment_Led[i_channel])
+		{
+			switch(VU_mode)
+			{
+				case VU_MODE_COLUMN_AND_PEAK:
+					if(Cur_Segment_Led[i_channel] == Peak_Segment_Led[i_channel])
+						break;
+				case VU_MODE_COLUMN_ONLY:
+					VU_RedrawScaleLed(Cur_Segment_Led[i_channel], i_channel, 0);
+					break;
+				case VU_MODE_enumMAX:
+					break;
+			}
+			Cur_Segment_Led[i_channel]--;
+		}
+		// ---
 		switch(VU_mode)
 		{
-			case VU_MODE_COLUMN_AND_PEAK:
-				if(left_cur_segment_led == left_peak_segment_led)
-					break;
 			case VU_MODE_COLUMN_ONLY:
-				VU_RedrawScaleLed(left_cur_segment_led, 0, 0);
 				break;
+			case VU_MODE_COLUMN_AND_PEAK:
+			{
+				if(Cur_Segment_Led[i_channel] >= Peak_Segment_Led[i_channel])
+				{
+					Peak_Segment_Led[i_channel] = Cur_Segment_Led[i_channel];
+					Peak_Time_Led[i_channel] = hal_time;
+					Peak_Time[i_channel] = 1;
+				}
+				else if((Peak_Time[i_channel] && hal_time - Peak_Time_Led[i_channel] > VU_PEAK_TIME)
+						|| (!Peak_Time[i_channel] && hal_time - Peak_Time_Led[i_channel] > VU_STEP_TIME))
+				{
+					Peak_Time_Led[i_channel] = hal_time;
+					Peak_Time[i_channel] = 0;
+					VU_RedrawScaleLed(Peak_Segment_Led[i_channel], i_channel, 0);
+					Peak_Segment_Led[i_channel]--;
+					if(Cur_Segment_Led[i_channel] != Peak_Segment_Led[i_channel])
+						VU_RedrawScaleLed(Peak_Segment_Led[i_channel], i_channel, 1);
+				}
+				break;
+			}
 			case VU_MODE_enumMAX:
 				break;
 		}
-		left_cur_segment_led--;
-	}
-	// ---
-	if(right_segment < 0)
-		right_segment = 0;
-	else if(right_segment > VU_MAX_NUM_LED)
-		right_segment = VU_MAX_NUM_LED;
-	// ---
-	if(right_segment > right_cur_segment_led)
-	{
-		right_cur_segment_led++;
-		VU_RedrawScaleLed(right_cur_segment_led, 1, 1);
-	}
-	else if(right_segment < right_cur_segment_led)
-	{
-		switch(VU_mode)
-		{
-			case VU_MODE_COLUMN_AND_PEAK:
-				if(right_cur_segment_led == right_peak_segment_led)
-					break;
-			case VU_MODE_COLUMN_ONLY:
-				VU_RedrawScaleLed(right_cur_segment_led, 1, 0);
-				break;
-			case VU_MODE_enumMAX:
-				break;
-		}
-		right_cur_segment_led--;
-	}
-	// ---
-	switch(VU_mode)
-	{
-		case VU_MODE_COLUMN_ONLY:
-			break;
-		case VU_MODE_COLUMN_AND_PEAK:
-		{
-			static uint8_t left_peak_time = 0;
-			static uint8_t right_peak_time = 0;
-			// ---
-			if(left_cur_segment_led >= left_peak_segment_led)
-			{
-				left_peak_segment_led = left_cur_segment_led;
-				left_peak_time_led = HAL_GetTick();
-				left_peak_time = 1;
-			}
-			else if((left_peak_time && HAL_GetTick() - left_peak_time_led > VU_PEAK_TIME)
-					|| (!left_peak_time && HAL_GetTick() - left_peak_time_led > VU_STEP_TIME))
-			{
-				left_peak_time_led = HAL_GetTick();
-				left_peak_time = 0;
-				VU_RedrawScaleLed(left_peak_segment_led, 0, 0);
-				left_peak_segment_led--;
-				if(left_cur_segment_led != left_peak_segment_led)
-					VU_RedrawScaleLed(left_peak_segment_led, 0, 1);
-			}
-			// ---
-			if(right_cur_segment_led >= right_peak_segment_led)
-			{
-				right_peak_segment_led = right_cur_segment_led;
-				right_peak_time_led = HAL_GetTick();
-				right_peak_time = 1;
-			}
-			else if((right_peak_time && HAL_GetTick() - right_peak_time_led > VU_PEAK_TIME)
-					|| (!right_peak_time && HAL_GetTick() - right_peak_time_led > VU_STEP_TIME))
-			{
-				right_peak_time_led = HAL_GetTick();
-				right_peak_time = 0;
-				VU_RedrawScaleLed(right_peak_segment_led, 1, 0);
-				right_peak_segment_led--;
-				if(right_cur_segment_led != right_peak_segment_led)
-					VU_RedrawScaleLed(right_peak_segment_led, 1, 1);
-			}
-			break;
-		}
-		case VU_MODE_enumMAX:
-			break;
 	}
 }
 

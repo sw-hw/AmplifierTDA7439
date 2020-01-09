@@ -48,6 +48,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
+#define	ADC_N				2
+// ===
 #define ADC_K_IIR			0.0001f	// coef. IIR filters (it needs to be calculated according ADC_FREQ_DIF)
 #define ADC_REF_0DB 		1024.0f	// reference value corresponding to 0 dB
 #define	ADC_CONST_OFFSET	2042.0f	// init value for IIR filters
@@ -193,58 +195,39 @@ void StartTaskVU(void const * argument)
 	  taskENTER_CRITICAL();
 	  if(TDA7439_GetAmplifierState())
 	  {
-		  static int16_t db_left  = 0x8000;
-		  static int16_t db_right = 0x8000;
-		  static float avg_left_f  = ADC_CONST_OFFSET;
-		  static float avg_right_f = ADC_CONST_OFFSET;
+		  static int16_t DB_Signals[ADC_N] = { 0x8000, 0x8000 };
+		  static float AVG_F[ADC_N] = { ADC_CONST_OFFSET, ADC_CONST_OFFSET };
+		  static int16_t Max_Signals[ADC_N] = { 0, 0 };
 		  static int16_t adc_counter = -1;
-		  static int16_t left_max = 0;
-		  static int16_t right_max = 0;
-		  int16_t adc_left, adc_right, cur_left, cur_right;
+		  int16_t ADC_Values[ADC_N];
+		  int16_t i_channel;
 		  // ---
-		  if(adc_counter != -1)
-		  {
-			  adc_left = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1);
-			  adc_right = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_2);
-		  }
-		  else
-		  {
-			  adc_left = ADC_CONST_OFFSET;
-			  adc_right = ADC_CONST_OFFSET;
-			  adc_counter = 0;
-		  }
+		  for(i_channel = 0; i_channel < ADC_N; i_channel++)
+			  ADC_Values[i_channel] = (int16_t)HAL_ADCEx_InjectedGetValue(&hadc1, ADC_INJECTED_RANK_1 + i_channel);
+		  // ---
 		  HAL_ADCEx_InjectedStart(&hadc1);
 		  // ---
-		  cur_left = abs(adc_left - realToInt(avg_left_f));
-		  cur_right = abs(adc_right - realToInt(avg_right_f));
-		  // ---
-		  avg_left_f = avg_left_f * (1.0f - ADC_K_IIR) + adc_left * ADC_K_IIR;
-		  avg_right_f = avg_right_f * (1.0f - ADC_K_IIR) + adc_right * ADC_K_IIR;
-		  // ---
-		  if(cur_left > left_max)
-			  left_max = cur_left;
-		  if(cur_right > right_max)
-			  right_max = cur_right;
+		  for(i_channel = 0; i_channel < ADC_N; i_channel++)
+		  {
+			  const int16_t signal = abs(ADC_Values[i_channel] - realToInt(AVG_F[i_channel]));
+			  if(signal > Max_Signals[i_channel])
+				  Max_Signals[i_channel] = signal;
+			  // ---
+			  AVG_F[i_channel] = AVG_F[i_channel] * (1.0f - ADC_K_IIR) + ADC_Values[i_channel] * ADC_K_IIR;
+		  }
 		  // ---
 		  adc_counter++;
 		  if(0 == (adc_counter % ADC_FREQ_DIV))
 		  {
-			  db_left  = ConvertTo_dB(left_max);
-			  db_right = ConvertTo_dB(right_max);
-			  // ---
-			  left_max = 0;
-			  right_max = 0;
+			  for(i_channel = 0; i_channel < ADC_N; i_channel++)
+			  {
+				  DB_Signals[i_channel] = ConvertTo_dB(Max_Signals[i_channel]);
+				  Max_Signals[i_channel] = 0;
+			  }
 			  adc_counter = 0;
 		  }
-		  // ---
 		  // ===
-		  /*
-		  if(db_left >= -45 || db_right >= -45)
-		  {
-			  volatile uint32_t just_for_debug = 0;
-		  }//*/
-		  // ===
-		  VU_DisplaySignal(db_left, db_right);
+		  VU_DisplaySignal(DB_Signals);
 	  }
 	  taskEXIT_CRITICAL();
 	  osDelay(1);
