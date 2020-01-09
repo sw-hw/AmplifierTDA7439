@@ -67,8 +67,8 @@ osThreadId TaskVUHandle;
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN FunctionPrototypes */
-int16_t realToInt(float value);
-int16_t ConvertTo_dB(int16_t value);
+static int16_t realToInt(float value);
+static int16_t ConvertTo_dB(int16_t value);
 
 /* USER CODE END FunctionPrototypes */
 
@@ -90,12 +90,12 @@ void vApplicationTickHook(void)
 	NEC_Tick();
 }
 
-int16_t realToInt(float value)
+static int16_t realToInt(float value)
 {
 	return (int16_t)(value < 0 ? value - 0.5f : value + 0.5f);
 }
 
-int16_t ConvertTo_dB(int16_t value)
+static int16_t ConvertTo_dB(int16_t value)
 {
 	float res;
 	if(value == 0)
