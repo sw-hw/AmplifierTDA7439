@@ -28,6 +28,8 @@ static void	VU_EraseScale(void)
 
 static void	VU_ApplyMode(void)
 {
+	int16_t i_channel;
+	// ---
 	VU_EraseScale();
 	// ---
 	ILI9488_Draw_Text("L",	  		  VU_LEFT_OFFSET_LED_LABEL,   				  VU_TOP_OFFSET_FIRST_LED + ((VU_SIZE_LED - 16) >> 1),
@@ -47,10 +49,11 @@ static void	VU_ApplyMode(void)
 	ILI9488_Draw_Text("R",	  		  VU_LEFT_OFFSET_LED_LABEL,					  VU_TOP_OFFSET_SECOND_LED + ((VU_SIZE_LED - 16) >> 1),
 			VU_COLOR_LABELS, VU_FONT_SIZE, ILI9488_COLOR_BACKGROUND);
 	// ---
-	Cur_Segment_Led[0] = -1;
-	Cur_Segment_Led[1] = -1;
-	Peak_Segment_Led[0] = -1;
-	Peak_Segment_Led[1] = -1;
+	for(i_channel = 0; i_channel < VU_N; i_channel++)
+	{
+		Cur_Segment_Led[i_channel] = -1;
+		Peak_Segment_Led[i_channel] = -1;
+	}
 }
 
 // ===
