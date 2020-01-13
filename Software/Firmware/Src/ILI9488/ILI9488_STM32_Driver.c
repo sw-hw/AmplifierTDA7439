@@ -4,14 +4,16 @@
 #include "gpio.h"
 
 /* Global Variables ------------------------------------------------------------------*/
-__IO uint16_t LCD_HEIGHT = ILI9488_SCREEN_HEIGHT;
-__IO uint16_t LCD_WIDTH	 = ILI9488_SCREEN_WIDTH;
+static __IO uint16_t LCD_HEIGHT = ILI9488_SCREEN_HEIGHT;
+static __IO uint16_t LCD_WIDTH	 = ILI9488_SCREEN_WIDTH;
 
 /*Send data (char) to LCD*/
 void ILI9488_SPI_Send(uint8_t SPI_Data)
 {
-	// TODO it needs to rewrite without HAL
-	HAL_SPI_Transmit(HSPI_INSTANCE, &SPI_Data, 1, 1);
+	for(;;)
+		if(__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
+			break;
+	*((__IO uint8_t *)HSPI_INSTANCE.Instance->DR) = SPI_Data;
 }
 
 /* Send command (char) to LCD */
@@ -50,7 +52,7 @@ void ILI9488_Set_Address(uint16_t X1, uint16_t Y1, uint16_t X2, uint16_t Y2)
 	ILI9488_Write_Command(0x2C);
 }
 
-/*Ser rotation of the screen - changes x0 and y0*/
+/*Set rotation of the screen - changes x0 and y0*/
 void ILI9488_Set_Rotation(uint8_t Rotation)
 {
 	uint8_t screen_rotation = Rotation;
@@ -99,6 +101,9 @@ void ILI9488_LedDisable(void)
 /*Initialize and turn On the LCD display*/
 void ILI9488_Init(void)
 {
+	SPI_1LINE_TX(HSPI_INSTANCE);	 /* Configure communication direction : 1Line */
+	__HAL_SPI_ENABLE(HSPI_INSTANCE); /* Enable SPI peripheral */
+	// ---
 	ILI9488_Write_Command(0x01); // Soft Reset
 	// Most of commands from https://github.com/jaretburkett/ILI9488
 	ILI9488_Write_Command(0xE0);
@@ -166,9 +171,9 @@ void ILI9488_Init(void)
 	ILI9488_Write_Command(0XB6);      //Display Function Control  RGB/MCU Interface Control
 
 	ILI9488_Write_Data(0x02);    //MCU
-	ILI9488_Write_Data(0x02);    //Source,Gate scan dieection
+	ILI9488_Write_Data(0x02);
 
-	ILI9488_Write_Command(0XE9);      // Set Image Functio
+	ILI9488_Write_Command(0XE9);
 	ILI9488_Write_Data(0x00);    // Disable 24 bit data
 
 	ILI9488_Write_Command(0xF7);      // Adjust Control
@@ -194,7 +199,7 @@ void ILI9488_TurnOff(void)
 }
 
 //FILL THE ENTIRE SCREEN WITH SELECTED COLOUR
-/*Sets address (entire screen) and Sends Height*Width ammount of colour information to LCD*/
+/*Sets address (entire screen) and Sends Height*Width amount of colour information to LCD*/
 void ILI9488_Fill_Screen(uint16_t Colour)
 {
 	ILI9488_Set_Address(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1);
@@ -215,14 +220,12 @@ void ILI9488_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 		for(uint8_t i = 0; i < 3;)
 			if(__HAL_SPI_GET_FLAG(HSPI_INSTANCE, SPI_FLAG_TXE))
 				*((__IO uint8_t *)HSPI_INSTANCE.Instance->DR) = data[i++];
-	/* Clear overrun flag in 2 Lines communication mode because received is not read */
-	__HAL_SPI_CLEAR_OVRFLAG(HSPI_INSTANCE);
 	HAL_GPIO_WritePin(LCD_CS_PORT, LCD_CS_PIN, GPIO_PIN_SET);
 }
 
 //DRAW PIXEL AT XY POSITION WITH SELECTED COLOUR
 //
-//Location is dependant on screen orientation. x0 and y0 locations change with orientations.
+//Location is dependent on screen orientation. x0 and y0 locations change with orientations.
 //Using pixels to draw big simple structures is not recommended as it is really slow
 //Try using either rectangles or lines if possible
 //
@@ -243,7 +246,7 @@ void ILI9488_Draw_Pixel(uint16_t X, uint16_t Y, uint16_t Colour)
 //DRAW RECTANGLE OF SET SIZE AND HEIGTH AT X and Y POSITION WITH CUSTOM COLOUR
 //
 //Rectangle is hollow. X and Y positions mark the upper left corner of rectangle
-//As with all other draw calls x0 and y0 locations dependant on screen orientation
+//As with all other draw calls x0 and y0 locations dependent on screen orientation
 //
 void ILI9488_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour)
 {
