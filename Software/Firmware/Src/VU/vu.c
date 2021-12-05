@@ -1,9 +1,11 @@
 #include "vu.h"
+#include "stm32f3xx_hal.h"
 
-static __IO VU_mode_t VU_mode;
-static __IO int16_t   Cur_Segment_Led[VU_N];
-static __IO uint32_t  Peak_Time_Led[VU_N];
-static __IO int16_t   Peak_Segment_Led[VU_N];
+
+static volatile VU_mode_t VU_mode;
+static volatile int16_t   Cur_Segment_Led[VU_N];
+static volatile uint32_t  Peak_Time_Led[VU_N];
+static volatile int16_t   Peak_Segment_Led[VU_N];
 
 static void VU_RedrawScaleLed(uint8_t segment, uint8_t channel, uint8_t state);
 static void VU_EraseScale(void);

@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 
-#define CHAR_WIDTH	8
-#define CHAR_HEIGHT	16
+#define CHAR_WIDTH  8
+#define CHAR_HEIGHT 16
 
 //' !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~ '
 // 96

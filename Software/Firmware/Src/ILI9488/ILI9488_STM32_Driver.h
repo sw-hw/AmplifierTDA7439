@@ -1,8 +1,8 @@
 #ifndef ILI9488_STM32_DRIVER_H
 #define ILI9488_STM32_DRIVER_H
 
-#include "stm32f3xx_hal.h"
-#include "spi.h"
+#include <stdint.h>
+
 
 #define ILI9488_SCREEN_HEIGHT 	320
 #define ILI9488_SCREEN_WIDTH 	480
